@@ -1,7 +1,9 @@
 package main
 
-import "fmt"
+import (
+	"linker-fan/gal-anonim-server/server/router"
+)
 
 func main() {
-	fmt.Println("Hello World")
+	router.Run(":8888")
 }
