@@ -1,4 +1,4 @@
-# Gal-Anonim-Serwer
+# Gal-Anonim-Server
 
 ## URLs to read
 ```
