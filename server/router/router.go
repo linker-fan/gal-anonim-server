@@ -1,10 +1,14 @@
 package router
 
-import "github.com/gin-gonic/gin"
+import (
+	"fmt"
 
-func Run(port string) {
+	"github.com/gin-gonic/gin"
+)
+
+func Run(port string, mode string) {
 	router := setupRoutes()
-	router.Run(port)
+	router.Run(fmt.Sprintf(":%s", port))
 }
 
 func setupRoutes() *gin.Engine {
