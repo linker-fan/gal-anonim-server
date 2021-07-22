@@ -1,8 +1,20 @@
 version: '3.7'
-services: 
+services:
+    database:
+        build: ./database
+        environment:
+            POSTGRES_DB: galanonim
+            POSTGRES_USER: galanonimuser
+            POSTGRES_PASSWORD: galanonimpassword
+        volumes:
+            - data:/var/lib/postgresql/data
+        ports: 
+            - "5432:5432"         
     server:
         build:
             context: ./server
             dockerfile: Dockerfile
         ports: 
             - "8888:8888"
+volumes:
+    data:

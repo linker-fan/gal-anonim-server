@@ -14,6 +14,13 @@ type Config struct {
 		Port string `yaml:"port"`
 		Mode string `yaml:"mode"`
 	} `yaml:"server"`
+	Database struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		Name     string `yaml:"name"`
+		User     string `yaml:"user"`
+		Password string `yaml:"password"`
+	}
 }
 
 func NewConfig(path string) (*Config, error) {
