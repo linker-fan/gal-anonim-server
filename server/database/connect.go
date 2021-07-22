@@ -11,13 +11,7 @@ import (
 
 var db *sql.DB
 
-func Connect() error {
-	c, err := config.NewConfig("./config.yml")
-	if err != nil {
-		log.Printf("database package: function Connect() failed: %v\n", err)
-		return err
-	}
-
+func Connect(c *config.Config) error {
 	psqlInfo := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", c.Database.User, c.Database.Password, c.Database.Host, c.Database.Port, c.Database.Name)
 	log.Println(psqlInfo)
 
