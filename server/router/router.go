@@ -17,6 +17,11 @@ func setupRoutes() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
+	auth := r.Group("/auth")
+	{
+		auth.POST("/login", handlers.Login)
+	}
+
 	chat := r.Group("/chat")
 	{
 		chat.GET("/ws", handlers.ChatWebsocket)
