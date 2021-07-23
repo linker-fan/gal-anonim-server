@@ -8,3 +8,7 @@ database:
   name: "galanonim"
   user: "galanonimuser"
   password: "galanonimpassword"
+jwt:
+  tokenSecret: "someTokenSecretJWT"
+  expTime: 1
+  issuer: "galanonim"
