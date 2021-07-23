@@ -17,8 +17,9 @@ func setupRoutes() *gin.Engine {
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
-	auth := r.Group("/auth")
+	auth := r.Group("/users")
 	{
+		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
 	}
 
