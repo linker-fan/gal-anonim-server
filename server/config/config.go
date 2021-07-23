@@ -20,7 +20,12 @@ type Config struct {
 		Name     string `yaml:"name"`
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
-	}
+	} `yaml:"database"`
+	Jwt struct {
+		TokenSecret string `yaml:"tokenSecret"`
+		ExpTime     int64  `yaml:"expTime"`
+		Issuer      string `yaml:"issuer"`
+	} `yaml:"jwt"`
 }
 
 func NewConfig(path string) (*Config, error) {
