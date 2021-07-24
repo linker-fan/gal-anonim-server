@@ -28,6 +28,8 @@ func init() {
 	c = conf
 }
 
+//GenerateJWTToken creates and returns a jwt token with claims
+//@author hyperxpizza
 func GenerateJWTToken(username string, id int, isAdmin bool) (string, *time.Time, error) {
 	expirationTime := time.Now().Add(time.Hour * time.Duration(c.Jwt.ExpTime))
 	claims := &JwtClaims{
@@ -51,6 +53,10 @@ func GenerateJWTToken(username string, id int, isAdmin bool) (string, *time.Time
 	return tokenString, &expirationTime, nil
 }
 
+//IsTokenValid takes tokenString as an argument and validates it
+//If the token is expired od does not contain claims, the function shall return an error
+//otherwise returns claims
+//@author hyperxpizza
 func IsTokenValid(tokenString string) (string, int, bool, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); ok == false {

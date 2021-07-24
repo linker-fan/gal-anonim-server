@@ -3,6 +3,7 @@ package router
 import (
 	"fmt"
 	"linker-fan/gal-anonim-server/server/handlers"
+	"linker-fan/gal-anonim-server/server/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -21,6 +22,12 @@ func setupRoutes() *gin.Engine {
 	{
 		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
+	}
+
+	room := r.Group("/room")
+	room.Use(middleware.JwtMiddleware())
+	{
+		room.POST("/new")
 	}
 
 	chat := r.Group("/chat")

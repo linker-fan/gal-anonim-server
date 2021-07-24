@@ -40,3 +40,15 @@ func CheckIfUsernameExists(username string) error {
 
 	return errors.New("Username already taken")
 }
+
+func GetIDAndPasswordByUsername(username string) (int, string, bool, error) {
+	var id int
+	var passwordHash string
+	var isAdmin bool
+	err := db.QueryRow("select id, passwordHash, isAdmin from users where username=$1", username).Scan(&id, &passwordHash, &isAdmin)
+	if err != nil {
+		return 0, "", false, err
+	}
+
+	return id, passwordHash, isAdmin, nil
+}

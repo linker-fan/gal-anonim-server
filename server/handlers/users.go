@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"database/sql"
+	"linker-fan/gal-anonim-server/server/auth"
 	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/utils"
 	"net/http"
@@ -63,6 +65,7 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	//insert user into the database
 	err = database.InsertUser(request.Username, passwordHash)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
@@ -74,6 +77,57 @@ func Register(c *gin.Context) {
 
 }
 
-func Login(c *gin.Context) {
+type LoginRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
 
+//Login function validates username and password given as json through request body
+//If the username and password are valid and matching, sets http Cookie with jwt token
+//@author hyperxpizza
+func Login(c *gin.Context) {
+	var request LoginRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	//check if username exists in the database and get users password and id
+	id, passwordHash, isAdmin, err := database.GetIDAndPasswordByUsername(request.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	//check if password from request matches passowordHash from the database
+	err = utils.CompareHashAndPassword(passwordHash, request.Password)
+	if err != nil {
+		c.Status(http.StatusUnauthorized) // or status conflict?
+		return
+	}
+
+	//generate jwt token
+	tokenString, expTime, err := auth.GenerateJWTToken(request.Username, id, isAdmin)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	//TODO:
+	//not sure if set cookie or return tokenString?
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "authToken",
+		Expires:  *expTime,
+		Value:    tokenString,
+		Secure:   true,
+		HttpOnly: true,
+	})
+
+	c.Status(http.StatusOK)
 }
