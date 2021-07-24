@@ -66,3 +66,31 @@ func TestValidatePassword(t *testing.T) {
 		t.Fail()
 	}
 }
+
+func TestValidateRoomName(t *testing.T) {
+	log.Println("Test ValidateRoomName()")
+
+	//valid username
+	err := ValidateRoomName("sometestroomname")
+	if err != nil {
+		t.Fail()
+	}
+
+	//username longer than 30 characters
+	err = ValidateRoomName("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
+	if err == nil {
+		t.Fail()
+	}
+
+	//username contains a special character
+	err = ValidateRoomName("a$!lolessa")
+	if err == nil {
+		t.Fail()
+	}
+
+	//empty string
+	err = ValidateRoomName("")
+	if err == nil {
+		t.Fail()
+	}
+}

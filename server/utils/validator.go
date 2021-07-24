@@ -44,3 +44,12 @@ func ValidatePassword(password string) error {
 	}
 	return nil
 }
+
+func ValidateRoomName(name string) error {
+	var isValid = regexp.MustCompile(`^[a-zA-Z0-9]{3,50}$`).MatchString
+	if isValid(name) {
+		return nil
+	} else {
+		return errors.New("Room name not valid")
+	}
+}
