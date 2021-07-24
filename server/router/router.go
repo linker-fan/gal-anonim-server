@@ -28,6 +28,7 @@ func setupRoutes() *gin.Engine {
 	protected.Use(middleware.JwtMiddleware())
 	{
 		protected.GET("/me", handlers.MeHandler)
+		protected.POST("/refresh_token", handlers.RefreshTokenHandler)
 	}
 
 	room := r.Group("/room")

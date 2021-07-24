@@ -160,3 +160,43 @@ func MeHandler(c *gin.Context) {
 	})
 	return
 }
+
+//RefreshTokenHandler creates a new token and sets a new, valid cookie
+//@author hyperxpizza
+func RefreshTokenHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	id, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	isAdmin, exists := c.Get("is_admin")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	tokenString, expTime, err := auth.GenerateJWTToken(username.(string), id.(int), isAdmin.(bool))
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	//TODO:
+	//not sure if set cookie or return tokenString?
+	http.SetCookie(c.Writer, &http.Cookie{
+		Name:     "jwtToken",
+		Expires:  *expTime,
+		Value:    tokenString,
+		Secure:   false,
+		HttpOnly: true,
+	})
+
+	c.Status(http.StatusOK)
+}
