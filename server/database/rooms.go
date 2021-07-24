@@ -34,7 +34,7 @@ func CheckIfUniqueRoomIDExists(uniqueRoomID string) error {
 
 func ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID string, userID int) error {
 	var ownerID int
-	err := db.QueryRow("select ownerID from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(ownerID)
+	err := db.QueryRow("select ownerID from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(&ownerID)
 	if err != nil {
 		log.Println(err)
 		return err
