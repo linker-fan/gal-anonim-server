@@ -52,7 +52,14 @@ func CreateRoomHandler(c *gin.Context) {
 		return
 	}
 
-	err = database.InsertRoom(uniqueRoomID.String(), request.Name, passwordHash, ownerID.(int))
+	roomID, err := database.InsertRoom(uniqueRoomID.String(), request.Name, passwordHash, ownerID.(int))
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	//add owner as the first member of the room
+	err = database.InsertMember(roomID, ownerID.(int))
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -110,7 +117,30 @@ func DeleteRoomHandler(c *gin.Context) {
 }
 
 func GetRoomMembersHandler(c *gin.Context) {
+	/*
+		uniqueRoomID := c.Param("uniqueRoomID")
+		if uniqueRoomID == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
 
+		userID, exists := c.Get("id")
+		if !exists {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		err := database.CheckIfUniqueRoomIDExists(uniqueRoomID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.Status(http.StatusNotFound)
+				return
+			} else {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+		}
+	*/
 }
 
 func UpdateRoomDataHandler(c *gin.Context) {
