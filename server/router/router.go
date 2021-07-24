@@ -32,9 +32,10 @@ func setupRoutes() *gin.Engine {
 	}
 
 	room := r.Group("/room")
-	room.Use(middleware.JwtMiddleware())
+	//room.Use(middleware.JwtMiddleware())
 	{
-		room.POST("/new")
+		room.POST("", handlers.CreateRoomHandler)
+		room.DELETE("", handlers.DeleteRoomHandler)
 	}
 
 	chat := r.Group("/chat")

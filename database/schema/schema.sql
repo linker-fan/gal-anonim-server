@@ -7,15 +7,28 @@ create table users (
 	updated timestamp not null
 );
 
-create table room_members (
-	id serial primary key,
-	userID integer references users(id) on delete set null
-); 
-
 create table rooms (
-	id text primary key not null,
+	id serial primary key,
+	uniqueRoomID text unique not null,
 	roomName varchar(50) not null,
-	roomPasswordHash text not null, 
-	ownerID integer not null references users(id) on delete set null,
-	roomMembersID integer not null references room_members(id) on delete set null
+	passwordHash text not null,
+	ownerID int references users(id) on delete set null,
+	created timestamp not null,
+	updated timestamp not null
 );
+
+create table messages (
+	id serial primary key,
+	roomID int not null references rooms(id) on delete set null,
+	userID int not null references users(id) on delete set null,
+	messageText text not null,
+	created timestamp not null
+);
+
+create table members(
+	id serial primary key,
+	roomID int not null references rooms(id) on delete set null,
+	userID int not null references users(id) on delete set null,
+	joined timestamp not null
+);
+
