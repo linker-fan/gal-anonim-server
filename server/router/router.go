@@ -36,6 +36,8 @@ func setupRoutes() *gin.Engine {
 	{
 		room.POST("", handlers.CreateRoomHandler)
 		room.DELETE("", handlers.DeleteRoomHandler)
+		room.PUT("", handlers.UpdateRoomDataHandler)
+		room.GET("/room/:id/members", handlers.GetRoomMembersHandler)
 	}
 
 	chat := r.Group("/chat")
