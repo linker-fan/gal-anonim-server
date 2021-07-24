@@ -24,6 +24,12 @@ func setupRoutes() *gin.Engine {
 		auth.POST("/login", handlers.Login)
 	}
 
+	protected := r.Group("/protected")
+	protected.Use(middleware.JwtMiddleware())
+	{
+		protected.GET("/me", handlers.MeHandler)
+	}
+
 	room := r.Group("/room")
 	room.Use(middleware.JwtMiddleware())
 	{

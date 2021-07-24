@@ -122,12 +122,41 @@ func Login(c *gin.Context) {
 	//TODO:
 	//not sure if set cookie or return tokenString?
 	http.SetCookie(c.Writer, &http.Cookie{
-		Name:     "authToken",
+		Name:     "jwtToken",
 		Expires:  *expTime,
 		Value:    tokenString,
-		Secure:   true,
+		Secure:   false,
 		HttpOnly: true,
 	})
 
 	c.Status(http.StatusOK)
+}
+
+//MeHandler returns data set in the context from jwt token
+//@author hyperxpizza
+func MeHandler(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	id, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	isAdmin, exists := c.Get("is_admin")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"id":       id.(int),
+		"username": username.(string),
+		"is_admin": isAdmin.(bool),
+	})
+	return
 }
