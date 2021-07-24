@@ -57,7 +57,9 @@ func CreateRoomHandler(c *gin.Context) {
 		return
 	}
 
-	c.Status(http.StatusCreated)
+	c.JSON(http.StatusCreated, gin.H{
+		"unique_room_id": uniqueRoomID.String(),
+	})
 }
 
 func DeleteRoomHandler(c *gin.Context) {

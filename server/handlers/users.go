@@ -125,6 +125,7 @@ func Login(c *gin.Context) {
 		Name:     "jwtToken",
 		Expires:  *expTime,
 		Value:    tokenString,
+		Path:     "/",
 		Secure:   false,
 		HttpOnly: true,
 	})
