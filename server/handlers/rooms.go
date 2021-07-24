@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"database/sql"
 	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/utils"
 	"net/http"
@@ -63,7 +64,49 @@ func CreateRoomHandler(c *gin.Context) {
 }
 
 func DeleteRoomHandler(c *gin.Context) {
+	uniqueRoomID := c.Param("uniqueRoomID")
+	if uniqueRoomID == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
 
+	userID, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	err := database.CheckIfUniqueRoomIDExists(uniqueRoomID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	if err != nil {
+		if err.Error() == "Not the owner" {
+			isAdmin, exists := c.Get("is_admin")
+			if !exists {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+
+			if isAdmin == false {
+				c.Status(http.StatusUnauthorized)
+			}
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = database.DeleteRoom(uniqueRoomID)
+	c.Status(http.StatusOK)
 }
 
 func GetRoomMembersHandler(c *gin.Context) {
