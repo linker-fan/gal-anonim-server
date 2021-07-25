@@ -117,30 +117,53 @@ func DeleteRoomHandler(c *gin.Context) {
 }
 
 func GetRoomMembersHandler(c *gin.Context) {
-	/*
-		uniqueRoomID := c.Param("uniqueRoomID")
-		if uniqueRoomID == "" {
-			c.Status(http.StatusBadRequest)
-			return
-		}
 
-		userID, exists := c.Get("id")
-		if !exists {
+	uniqueRoomID := c.Param("uniqueRoomID")
+	if uniqueRoomID == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	//check if room with this unique id exists
+	err := database.CheckIfUniqueRoomIDExists(uniqueRoomID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		} else {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
+	}
 
-		err := database.CheckIfUniqueRoomIDExists(uniqueRoomID)
-		if err != nil {
-			if err == sql.ErrNoRows {
-				c.Status(http.StatusNotFound)
-				return
-			} else {
-				c.Status(http.StatusInternalServerError)
-				return
-			}
+	//check if user sending this request is a member of this room
+	err = database.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userID.(int))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusConflict)
+			return
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
 		}
-	*/
+	}
+
+	//get members of this room
+	members, err := database.GetRoomMembers(uniqueRoomID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"usernames": members,
+	})
 }
 
 func UpdateRoomDataHandler(c *gin.Context) {
