@@ -38,11 +38,14 @@ func setupRoutes() *gin.Engine {
 		room.DELETE("/:uniqueRoomID", handlers.DeleteRoomHandler)
 		room.PUT("/:uniqueRoomID", handlers.UpdateRoomDataHandler)
 		room.GET("/:uniqueRoomID/members", handlers.GetRoomMembersHandler)
+		room.POST("/:uniqueRoomID/add_member", handlers.AddMemberToTheRoomHandler)
+		room.DELETE("/:uniqueRoomID/remove_member", handlers.RemoveMemberFromTheRoomHandler)
+		room.DELETE("/:uniqueRoomID/leave", handlers.LeaveRoomHandler)
 	}
 
 	chat := r.Group("/chat")
 	{
-		chat.GET("/ws", handlers.ChatWebsocket)
+		chat.GET("/:uniqueRoomID/ws", handlers.ChatWebsocket)
 	}
 
 	return r

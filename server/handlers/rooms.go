@@ -105,6 +105,7 @@ func DeleteRoomHandler(c *gin.Context) {
 
 			if isAdmin == false {
 				c.Status(http.StatusUnauthorized)
+				return
 			}
 		} else {
 			c.Status(http.StatusInternalServerError)
@@ -167,5 +168,48 @@ func GetRoomMembersHandler(c *gin.Context) {
 }
 
 func UpdateRoomDataHandler(c *gin.Context) {
+	/*
+		uniqueRoomID := c.Param("uniqueRoomID")
+		if uniqueRoomID == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		userID, exists := c.Get("id")
+		if !exists {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+		if err != nil {
+			if err.Error() == "Not the owner" {
+				isAdmin, exists := c.Get("is_admin")
+				if !exists {
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+
+				if isAdmin == false {
+					c.Status(http.StatusUnauthorized)
+					return
+				}
+			} else {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+		}
+	*/
+}
+
+func AddMemberToTheRoomHandler(c *gin.Context) {
+
+}
+
+func RemoveMemberFromTheRoomHandler(c *gin.Context) {
+
+}
+
+func LeaveRoomHandler(c *gin.Context) {
 
 }
