@@ -54,3 +54,19 @@ func GetRoomMembers(uniqueRoomID string) ([]string, error) {
 
 	return usernames, nil
 }
+
+func DeleteMember(roomID, userID int) error {
+	stmt, err := db.Prepare("delete from members where roomID=$1 and userID=$2")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(roomID, userID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
