@@ -371,4 +371,17 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 
 func LeaveRoomHandler(c *gin.Context) {
 
+	/*
+		uniqueRoomID := c.Param("uniqueRoomID")
+		if uniqueRoomID == "" {
+			c.Status(http.StatusBadRequest)
+			return
+		}
+
+		userID, exists := c.Get("id")
+		if !exists {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	*/
 }
