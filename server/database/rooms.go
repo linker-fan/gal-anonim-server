@@ -80,3 +80,14 @@ func UpdateRoom(name, passwordHash, uniqueRoomID string) error {
 
 	return nil
 }
+
+func GetRoomIDByUniqueRoomID(uniqueRoomID string) (int, error) {
+	var id int
+	err := db.QueryRow("select id from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(&id)
+	if err != nil {
+		log.Println(err)
+		return 0, err
+	}
+
+	return id, nil
+}

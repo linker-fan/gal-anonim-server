@@ -24,7 +24,7 @@ func InsertMember(roomID, userID int) error {
 func CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID string, userID int) error {
 	var roomid int
 	var id int
-	err := db.QueryRow("select distinct m.userid, r.id from members as m join rooms as r on r.id = m.roomid where r.uniqueroomid=$1 and m.userid=$2", uniqueRoomID, userID).Scan(&id, roomid)
+	err := db.QueryRow("select distinct m.userid, r.id from members as m join rooms as r on r.id = m.roomid where r.uniqueroomid=$1 and m.userid=$2", uniqueRoomID, userID).Scan(&id, &roomid)
 	if err != nil {
 		log.Println(err)
 		return err

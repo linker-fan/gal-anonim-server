@@ -202,8 +202,80 @@ func UpdateRoomDataHandler(c *gin.Context) {
 	*/
 }
 
-func AddMemberToTheRoomHandler(c *gin.Context) {
+type AddMemberRequest struct {
+	Username string `json:"username"`
+}
 
+func AddMemberToTheRoomHandler(c *gin.Context) {
+	var request AddMemberRequest
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	uniqueRoomID := c.Param("uniqueRoomID")
+	if uniqueRoomID == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	if err != nil {
+		if err.Error() == "Not the owner" {
+			isAdmin, exists := c.Get("is_admin")
+			if !exists {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+
+			if isAdmin == false {
+				c.Status(http.StatusUnauthorized)
+				return
+			}
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	//get users id
+	userToAddID, err := database.GetUserIDByUsername(request.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	//get room id by uniqueRoomID
+	roomID, err := database.GetRoomIDByUniqueRoomID(uniqueRoomID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = database.InsertMember(roomID, userToAddID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+	return
 }
 
 func RemoveMemberFromTheRoomHandler(c *gin.Context) {
