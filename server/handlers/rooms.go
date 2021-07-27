@@ -431,17 +431,92 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 
 func LeaveRoomHandler(c *gin.Context) {
 
-	/*
-		uniqueRoomID := c.Param("uniqueRoomID")
-		if uniqueRoomID == "" {
-			c.Status(http.StatusBadRequest)
-			return
-		}
+	uniqueRoomID := c.Param("uniqueRoomID")
+	if uniqueRoomID == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
 
-		userID, exists := c.Get("id")
-		if !exists {
+	userID, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	roomID, err := database.GetRoomIDByUniqueRoomID(uniqueRoomID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusNotFound)
+			return
+		} else {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
-	*/
+	}
+
+	err = database.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userID.(int))
+	if err != nil {
+		if err == sql.ErrNoRows {
+			c.Status(http.StatusConflict)
+			return
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	//if user that want to leave the room is an admin, delete the whole room and it's members
+	err = database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	if err != nil {
+		if err.Error() == "Not the owner" {
+			isAdmin, exists := c.Get("is_admin")
+			if !exists {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+
+			if isAdmin.(bool) {
+				err := database.DeleteRoom(uniqueRoomID)
+				if err != nil {
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+
+				err = database.DeleteAllRoomMembers(roomID)
+				if err != nil {
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+
+				c.Status(http.StatusOK)
+				return
+			} else {
+				err := database.DeleteMember(roomID, userID.(int))
+				if err != nil {
+					c.Status(http.StatusInternalServerError)
+					return
+				}
+				c.Status(http.StatusOK)
+				return
+			}
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	err = database.DeleteRoom(uniqueRoomID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	err = database.DeleteAllRoomMembers(roomID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+	return
 }

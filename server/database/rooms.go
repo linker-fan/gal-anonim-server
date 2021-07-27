@@ -123,3 +123,19 @@ func GetRoomIDByUniqueRoomID(uniqueRoomID string) (int, error) {
 
 	return id, nil
 }
+
+func DeleteAllRoomMembers(roomID int) error {
+	stmt, err := db.Prepare("delete from members where roomID=$1")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(roomID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
