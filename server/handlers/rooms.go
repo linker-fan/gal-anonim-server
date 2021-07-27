@@ -168,38 +168,98 @@ func GetRoomMembersHandler(c *gin.Context) {
 }
 
 func UpdateRoomDataHandler(c *gin.Context) {
-	/*
-		uniqueRoomID := c.Param("uniqueRoomID")
-		if uniqueRoomID == "" {
-			c.Status(http.StatusBadRequest)
+
+	uniqueRoomID := c.Param("uniqueRoomID")
+	if uniqueRoomID == "" {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	userID, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	if err != nil {
+		if err.Error() == "Not the owner" {
+			isAdmin, exists := c.Get("is_admin")
+			if !exists {
+				c.Status(http.StatusInternalServerError)
+				return
+			}
+
+			if isAdmin == false {
+				c.Status(http.StatusUnauthorized)
+				return
+			}
+		} else {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+	}
+
+	//get queries
+	newName := c.Query("name")
+	newPassword1 := c.Query("password1")
+	newPassword2 := c.Query("password2")
+
+	if newName == "" && newPassword1 == "" && newPassword2 == "" {
+		c.Status(http.StatusNotModified)
+		return
+	}
+
+	if newName != "" {
+		err := utils.ValidateRoomName(newName)
+		if err != nil {
+			c.Status(http.StatusNotAcceptable)
 			return
 		}
 
-		userID, exists := c.Get("id")
-		if !exists {
+		err = database.UpdateRoomName(newName, uniqueRoomID)
+		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
 
-		err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
-		if err != nil {
-			if err.Error() == "Not the owner" {
-				isAdmin, exists := c.Get("is_admin")
-				if !exists {
-					c.Status(http.StatusInternalServerError)
-					return
-				}
-
-				if isAdmin == false {
-					c.Status(http.StatusUnauthorized)
-					return
-				}
-			} else {
-				c.Status(http.StatusInternalServerError)
-				return
-			}
+		if newPassword1 != "" && newPassword2 != "" {
+			c.Status(http.StatusOK)
+			return
 		}
-	*/
+	}
+
+	if newPassword1 != "" && newPassword2 != "" {
+		if newPassword1 != newPassword2 {
+			c.Status(http.StatusConflict)
+			return
+		}
+
+		err = utils.ValidatePassword(newPassword1)
+		if err != nil {
+			c.Status(http.StatusNotAcceptable)
+			return
+		}
+
+		hashedPassword, err := utils.HashPassword(newPassword1)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		err = database.UpdateRoomPassword(hashedPassword, uniqueRoomID)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+
+		c.Status(http.StatusOK)
+		return
+	}
+
+	c.Status(http.StatusNotModified)
+	return
+
 }
 
 type MemberRequest struct {
