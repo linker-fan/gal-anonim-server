@@ -45,6 +45,7 @@ func setupRoutes() *gin.Engine {
 
 	chat := r.Group("/chat")
 	chat.Use(middleware.JwtMiddleware())
+	chat.Use(middleware.ChatMiddleware())
 	{
 		chat.GET("/:uniqueRoomID/ws", handlers.ChatWebsocket)
 	}
