@@ -65,6 +65,38 @@ func DeleteRoom(uniqueRoomID string) error {
 	return nil
 }
 
+func UpdateRoomName(name, uniqueRoomID string) error {
+	stmt, err := db.Prepare("update rooms set roomName=$1 where uniqueRoomID=$2")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(name, uniqueRoomID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func UpdateRoomPassword(passowrdHash, uniqueRoomID string) error {
+	stmt, err := db.Prepare("update rooms set passwordHash=$1 where uniqueRoomID=$2")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(passowrdHash, uniqueRoomID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func UpdateRoom(name, passwordHash, uniqueRoomID string) error {
 	stmt, err := db.Prepare("update rooms set roomName=$1, passwordHash=$2, updated=$3 where uniqueRoomID=$4")
 	if err != nil {
