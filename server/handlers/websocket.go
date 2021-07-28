@@ -146,7 +146,7 @@ func (c *Client) write() {
 	}
 }
 
-func ChatWebsocket(c *gin.Context) {
+func ChatWebsocket(hub *ChatHub, c *gin.Context) {
 
 	id, exists := c.Get("id")
 	if !exists {
@@ -171,10 +171,6 @@ func ChatWebsocket(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-
-	hub := newChatHub()
-	go hub.run()
-
 	client := &Client{hub: hub, conn: ws, send: make(chan []byte, 256)}
 	client.hub.register <- client
 
