@@ -15,6 +15,7 @@ func Run(port string, mode string) {
 
 func setupRoutes() *gin.Engine {
 	r := gin.New()
+
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
