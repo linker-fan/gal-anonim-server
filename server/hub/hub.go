@@ -1,6 +1,7 @@
 package hub
 
 type ChatHub struct {
+	Rooms      map[string]*Room
 	Clients    map[*Client]bool
 	Broadcast  chan []byte
 	Register   chan *Client
@@ -9,6 +10,7 @@ type ChatHub struct {
 
 func NewChatHub() *ChatHub {
 	return &ChatHub{
+		Rooms:      make(map[string]*Room),
 		Clients:    make(map[*Client]bool),
 		Broadcast:  make(chan []byte),
 		Register:   make(chan *Client),
