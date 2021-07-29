@@ -139,3 +139,14 @@ func DeleteAllRoomMembers(roomID int) error {
 
 	return nil
 }
+
+func GetRoomIDByName(name string) (int, error) {
+	var id int
+	err := db.QueryRow("select id from rooms where roomName=$1", name).Scan(id)
+	if err != nil {
+		log.Println(err)
+		return 0, err
+	}
+
+	return id, nil
+}
