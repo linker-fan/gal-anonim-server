@@ -42,3 +42,7 @@ func (c *ChatHub) Run() {
 		}
 	}
 }
+
+func (c *ChatHub) GetClients() map[*Client]bool {
+	return c.Clients
+}
