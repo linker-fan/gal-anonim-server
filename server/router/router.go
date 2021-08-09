@@ -30,6 +30,7 @@ func setupRoutes() *gin.Engine {
 	{
 		protected.GET("/me", handlers.MeHandler)
 		protected.POST("/refresh_token", handlers.RefreshTokenHandler)
+		protected.POST("/pin", handlers.SetPinHandler)
 	}
 
 	room := r.Group("/room")

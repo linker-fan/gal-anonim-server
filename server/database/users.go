@@ -63,3 +63,19 @@ func GetUserIDByUsername(username string) (int, error) {
 
 	return id, nil
 }
+
+func SetPin(pin string, id int) error {
+	stmt, err := db.Prepare("update users set pin=$1 where id=$2")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(pin, id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}

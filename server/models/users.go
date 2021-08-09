@@ -9,4 +9,5 @@ type User struct {
 	IsAdmin      bool      `json:"is_admin"`
 	Created      time.Time `json:"created"`
 	Updated      time.Time `json:"updated"`
+	Pin          *string   `json:"pin"`
 }

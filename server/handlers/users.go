@@ -201,3 +201,15 @@ func RefreshTokenHandler(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+type SetPinRequest struct {
+	Pin string `json:"pin"`
+}
+
+func SetPinHandler(c *gin.Context) {
+	id, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+}
