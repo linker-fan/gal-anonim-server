@@ -19,5 +19,6 @@ func main() {
 		log.Fatal(err)
 	}
 
+	//api
 	router.Run(c.Server.Port, c.Server.Mode)
 }

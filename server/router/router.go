@@ -3,17 +3,21 @@ package router
 import (
 	"fmt"
 	"linker-fan/gal-anonim-server/server/handlers"
+	"linker-fan/gal-anonim-server/server/hub"
 	"linker-fan/gal-anonim-server/server/middleware"
 
 	"github.com/gin-gonic/gin"
 )
 
 func Run(port string, mode string) {
-	router := setupRoutes()
+	//chat websocket
+	wsServer := hub.NewHub()
+	go wsServer.Run()
+	router := setupRoutes(wsServer)
 	router.Run(fmt.Sprintf(":%s", port))
 }
 
-func setupRoutes() *gin.Engine {
+func setupRoutes(hub *hub.Hub) *gin.Engine {
 	r := gin.New()
 
 	r.Use(gin.Logger())

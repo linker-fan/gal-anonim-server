@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/hub"
 	"net/http"
 
@@ -10,46 +9,25 @@ import (
 )
 
 var wsupgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
-var chatHub *hub.ChatHub
-
-func init() {
-	chatHub = hub.NewChatHub()
-	chatHub.Run()
+	ReadBufferSize:  4096,
+	WriteBufferSize: 4096,
 }
 
 func ChatWebsocket(c *gin.Context) {
 
-	id, exists := c.Get("id")
-	if !exists {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
+}
 
-	uniqueRoomID := c.Param("uniqueRoomID")
-	if uniqueRoomID == "" {
-		c.Status(http.StatusBadRequest)
-		return
-	}
-
-	err := database.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, id.(int))
+func serveWS(wsServer *hub.Hub, w http.ResponseWriter, r *http.Request) {
+	conn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
-		c.Status(http.StatusUnauthorized)
+		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	ws, err := wsupgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	client := &hub.Client{Hub: chatHub, Conn: ws, Send: make(chan []byte, 256)}
-	client.Hub.Register <- client
+	client := hub.NewClient(conn, wsServer)
 
-	go client.Read()
-	go client.Write()
+	go client.WritePump()
+	go client.ReadPump()
 
+	wsServer.Register <- client
 }
