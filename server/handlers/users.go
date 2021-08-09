@@ -207,9 +207,29 @@ type SetPinRequest struct {
 }
 
 func SetPinHandler(c *gin.Context) {
+	var request SetPinRequest
+
+	if err := c.ShouldBindJSON(&request); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
 	id, exists := c.Get("id")
 	if !exists {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+
+	if err := utils.ValidatePin(request.Pin); err != nil {
+		c.Status(http.StatusNotAcceptable)
+		return
+	}
+
+	if err := database.SetPin(request.Pin, id.(int)); err != nil {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	c.Status(http.StatusOK)
+	return
 }

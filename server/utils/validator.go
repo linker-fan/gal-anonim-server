@@ -53,3 +53,11 @@ func ValidateRoomName(name string) error {
 		return errors.New("Room name not valid")
 	}
 }
+
+func ValidatePin(pin string) error {
+	if len(pin) < 4 && len(pin) > 8 {
+		return errors.New("Pin not valid")
+	}
+
+	return nil
+}
