@@ -14,6 +14,10 @@ func NewRoom(name string) *Room {
 }
 
 func (r *Room) Join(c *Client) error {
+	if _, ok := r.Clients[c]; ok {
+		c.Conn.WriteMessage()
+	}
+
 	return nil
 }
 

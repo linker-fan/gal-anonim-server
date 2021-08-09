@@ -4,7 +4,8 @@ create table users (
 	passwordHash text not null,
     isAdmin boolean not null, 
 	created timestamp not null,
-	updated timestamp not null
+	updated timestamp not null,
+	pin varchar(8)
 );
 
 create table rooms (
