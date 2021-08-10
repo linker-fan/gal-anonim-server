@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"encoding/json"
 	"log"
 	"time"
 
@@ -24,19 +25,30 @@ var (
 )
 
 type Client struct {
-	conn *websocket.Conn
-	hub  *Hub
+	ID       int
+	Username string
+	conn     *websocket.Conn
+	hub      *Hub
+	send     chan []byte
+	rooms    map[*Room]bool
 }
 
-func NewClient(conn *websocket.Conn, hub *Hub) *Client {
+func NewClient(conn *websocket.Conn, hub *Hub, username string, id int) *Client {
 	return &Client{
-		conn: conn,
-		hub:  hub,
+		ID:       id,
+		Username: username,
+		conn:     conn,
+		hub:      hub,
+		send:     make(chan []byte),
+		rooms:    make(map[*Room]bool),
 	}
 }
 
 func (c *Client) disconnect() {
-
+	c.hub.Unregister <- c
+	for room := range c.rooms {
+		room.unregister <- c
+	}
 }
 
 func (c *Client) WritePump() {
@@ -99,5 +111,19 @@ func (c *Client) ReadPump() {
 		}
 
 		c.hub.broadcast <- jsonMessage
+	}
+}
+
+func (c *Client) handleNewMessage(jsonMessage []byte) {
+	var message Message
+	if err := json.Unmarshal(jsonMessage, &message); err != nil {
+		log.Printf("Error on unmarshal JSON message %v\n", err)
+	}
+
+	message.Sender = c
+
+	switch message.Action {
+	case SendMessageAction:
+		roomName := message.Target
 	}
 }

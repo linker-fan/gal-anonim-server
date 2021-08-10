@@ -13,18 +13,34 @@ var wsupgrader = websocket.Upgrader{
 	WriteBufferSize: 4096,
 }
 
-func ChatWebsocket(c *gin.Context) {
+var wsServer *hub.Hub
 
+func init() {
+	wsServer = hub.NewHub()
+	wsServer.Run()
 }
 
-func serveWS(wsServer *hub.Hub, w http.ResponseWriter, r *http.Request) {
+func ChatWebsocket(c *gin.Context) {
+	username, exists := c.Get("username")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+	}
+
+	id, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+	}
+	serveWS(c.Writer, c.Request, username.(string), id.(int))
+}
+
+func serveWS(w http.ResponseWriter, r *http.Request, username string, id int) {
 	conn, err := wsupgrader.Upgrade(w, r, nil)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
-	client := hub.NewClient(conn, wsServer)
+	client := hub.NewClient(conn, wsServer, username, id)
 
 	go client.WritePump()
 	go client.ReadPump()

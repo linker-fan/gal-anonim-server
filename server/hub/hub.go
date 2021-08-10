@@ -1,10 +1,13 @@
 package hub
 
+import "errors"
+
 type Hub struct {
 	Clients    map[*Client]bool
 	Register   chan *Client
 	Unregister chan *Client
 	broadcast  chan []byte
+	rooms      map[*Room]bool
 }
 
 func NewHub() *Hub {
@@ -13,6 +16,7 @@ func NewHub() *Hub {
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		broadcast:  make(chan []byte),
+		rooms:      make(map[*Room]bool),
 	}
 }
 
@@ -43,4 +47,20 @@ func (h *Hub) unregisterClient(client *Client) {
 	if _, ok := h.Clients[client]; ok {
 		delete(h.Clients, client)
 	}
+}
+
+func (h *Hub) CreateRoom(id, name string) {
+	room := NewRoom(id, name)
+	go room.Run()
+	h.rooms[room] = true
+}
+
+func (h *Hub) FindRoomByID(id string) (*Room, error) {
+	for r := range h.rooms {
+		if r.GetID() == id {
+			return r, nil
+		}
+	}
+
+	return nil, errors.New("Room not found")
 }
