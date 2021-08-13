@@ -1,7 +1,5 @@
 package hub
 
-import "errors"
-
 type Hub struct {
 	Clients    map[*Client]bool
 	Register   chan *Client
@@ -49,18 +47,38 @@ func (h *Hub) unregisterClient(client *Client) {
 	}
 }
 
-func (h *Hub) CreateRoom(id, name string) {
-	room := NewRoom(id, name)
+func (h *Hub) CreateRoom(id string) {
+	room := NewRoom(id)
 	go room.Run()
 	h.rooms[room] = true
 }
 
-func (h *Hub) FindRoomByID(id string) (*Room, error) {
+func (h *Hub) FindRoomByID(id string) *Room {
 	for r := range h.rooms {
 		if r.GetID() == id {
-			return r, nil
+			return r
 		}
 	}
 
-	return nil, errors.New("Room not found")
+	return nil
 }
+
+func (h *Hub) notifyClientJoined(c *Client) {
+	message := &Message{
+		Action: UserJoinedAction,
+		Sender: c,
+	}
+
+	h.broadcastToClients(message.encode())
+}
+
+func (h *Hub) notifyClientLeft(c *Client) {
+	message := &Message{
+		Action: UserLeftAction,
+		Sender: c,
+	}
+
+	h.broadcastToClients(message.encode())
+}
+
+func (h)

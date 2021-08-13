@@ -65,7 +65,7 @@ func CreateRoomHandler(c *gin.Context) {
 		return
 	}
 
-	wsServer.CreateRoom(uniqueRoomID.String(), request.Name)
+	wsServer.CreateRoom(uniqueRoomID.String())
 
 	c.JSON(http.StatusCreated, gin.H{
 		"unique_room_id": uniqueRoomID.String(),

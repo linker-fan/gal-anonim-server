@@ -1,18 +1,20 @@
 package hub
 
+import "fmt"
+
+const welcomeMessage = "%s joined the chat"
+
 type Room struct {
 	id         string
-	name       string
 	clients    map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *Message
 }
 
-func NewRoom(id string, name string) *Room {
+func NewRoom(id string) *Room {
 	r := &Room{
 		id:         id,
-		name:       name,
 		clients:    make(map[*Client]bool),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
@@ -53,7 +55,13 @@ func (r *Room) broadcastToClientsInRoom(message []byte) {
 }
 
 func (r *Room) notifyClientJoined(c *Client) {
+	message := &Message{
+		Action:  SendMessageAction,
+		Target:  r.id,
+		Message: fmt.Sprintf(welcomeMessage, c.Username),
+	}
 
+	r.broadcastToClientsInRoom(message.encode())
 }
 
 func (r *Room) GetID() string {

@@ -110,7 +110,7 @@ func (c *Client) ReadPump() {
 			break
 		}
 
-		c.hub.broadcast <- jsonMessage
+		c.handleNewMessage(jsonMessage)
 	}
 }
 
@@ -124,6 +124,33 @@ func (c *Client) handleNewMessage(jsonMessage []byte) {
 
 	switch message.Action {
 	case SendMessageAction:
-		roomName := message.Target
+		roomID := message.Target
+		if room := c.hub.FindRoomByID(roomID); room != nil {
+			room.broadcast <- &message
+		}
+	case JoinRoomAction:
+		c.handleJoinRoomMessage(message)
+	case LeaveRoomAction:
+		c.handleLeaveRoomMessage(message)
 	}
+}
+
+func (c *Client) handleJoinRoomMessage(m Message) {
+	roomID := m.Message
+	room := c.hub.FindRoomByID(roomID)
+	if room == nil {
+		//room = c.hub.CreateRoom(roomID)
+	} else {
+		c.rooms[room] = true
+		room.register <- c
+	}
+}
+
+func (c *Client) handleLeaveRoomMessage(m Message) {
+	room := c.hub.FindRoomByID(m.Target)
+	if _, ok := c.rooms[room]; ok {
+		delete(c.rooms, room)
+	}
+
+	room.unregister <- c
 }
