@@ -1,6 +1,7 @@
 package database
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"linker-fan/gal-anonim-server/server/config"
@@ -37,6 +38,12 @@ func ConnectToRedis(c *config.Config) *redis.Client {
 		Password: c.Redis.Password, // no password set
 		DB:       c.Redis.DB,       // use default DB
 	})
+
+	//check connection
+	_, err := rdb.Ping(context.Background()).Result()
+	if err != nil {
+		log.Println(err)
+	}
 
 	return rdb
 }
