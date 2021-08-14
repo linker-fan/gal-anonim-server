@@ -10,15 +10,17 @@ type Room struct {
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *Message
+	Private    bool `json"private"`
 }
 
-func NewRoom(id string) *Room {
+func NewRoom(id string, private bool) *Room {
 	r := &Room{
 		id:         id,
 		clients:    make(map[*Client]bool),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan *Message),
+		Private:    private,
 	}
 
 	return r
@@ -38,7 +40,9 @@ func (r *Room) Run() {
 }
 
 func (r *Room) registerClientInRoom(client *Client) {
-	r.notifyClientJoined(client)
+	if !r.Private {
+		r.notifyClientJoined(client)
+	}
 	r.clients[client] = true
 }
 
@@ -57,8 +61,8 @@ func (r *Room) broadcastToClientsInRoom(message []byte) {
 func (r *Room) notifyClientJoined(c *Client) {
 	message := &Message{
 		Action:  SendMessageAction,
-		Target:  r.id,
-		Message: fmt.Sprintf(welcomeMessage, c.Username),
+		Target:  r,
+		Message: fmt.Sprintf(welcomeMessage, c.username),
 	}
 
 	r.broadcastToClientsInRoom(message.encode())

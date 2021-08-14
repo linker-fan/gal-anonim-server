@@ -65,7 +65,7 @@ func CreateRoomHandler(c *gin.Context) {
 		return
 	}
 
-	wsServer.CreateRoom(uniqueRoomID.String())
+	wsServer.CreateRoom(uniqueRoomID.String(), false)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"unique_room_id": uniqueRoomID.String(),
@@ -427,6 +427,8 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+
+	//room := wsServer.FindRoomByID(uniqueRoomID)
 
 	c.Status(http.StatusOK)
 }

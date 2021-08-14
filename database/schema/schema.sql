@@ -15,7 +15,8 @@ create table rooms (
 	passwordHash text not null,
 	ownerID int references users(id) on delete set null,
 	created timestamp not null,
-	updated timestamp not null
+	updated timestamp not null,
+	private bool
 );
 
 create table messages (

@@ -24,7 +24,7 @@ func (h *Hub) Run() {
 		case client := <-h.Register:
 			h.registerClient(client)
 		case client := <-h.Unregister:
-			h.unregisterClient(client)
+			h.UnregisterClient(client)
 		case message := <-h.broadcast:
 			h.broadcastToClients(message)
 		}
@@ -38,17 +38,19 @@ func (h *Hub) broadcastToClients(message []byte) {
 }
 
 func (h *Hub) registerClient(client *Client) {
+	h.notifyClientJoined(client)
+	h.listOnlineClients(client)
 	h.Clients[client] = true
 }
 
-func (h *Hub) unregisterClient(client *Client) {
+func (h *Hub) UnregisterClient(client *Client) {
 	if _, ok := h.Clients[client]; ok {
 		delete(h.Clients, client)
 	}
 }
 
-func (h *Hub) CreateRoom(id string) {
-	room := NewRoom(id)
+func (h *Hub) CreateRoom(id string, private bool) {
+	room := NewRoom(id, private)
 	go room.Run()
 	h.rooms[room] = true
 }
@@ -81,4 +83,12 @@ func (h *Hub) notifyClientLeft(c *Client) {
 	h.broadcastToClients(message.encode())
 }
 
-func (h)
+func (h *Hub) listOnlineClients(c *Client) {
+	for existingClient := range h.Clients {
+		message := &Message{
+			Action: UserJoinedAction,
+			Sender: existingClient,
+		}
+		c.send <- message.encode()
+	}
+}

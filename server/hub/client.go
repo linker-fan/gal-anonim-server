@@ -25,8 +25,8 @@ var (
 )
 
 type Client struct {
-	ID       int
-	Username string
+	id       int
+	username string
 	conn     *websocket.Conn
 	hub      *Hub
 	send     chan []byte
@@ -35,8 +35,8 @@ type Client struct {
 
 func NewClient(conn *websocket.Conn, hub *Hub, username string, id int) *Client {
 	return &Client{
-		ID:       id,
-		Username: username,
+		id:       id,
+		username: username,
 		conn:     conn,
 		hub:      hub,
 		send:     make(chan []byte),
@@ -125,7 +125,7 @@ func (c *Client) handleNewMessage(jsonMessage []byte) {
 	switch message.Action {
 	case SendMessageAction:
 		roomID := message.Target
-		if room := c.hub.FindRoomByID(roomID); room != nil {
+		if room := c.hub.FindRoomByID(roomID.GetID()); room != nil {
 			room.broadcast <- &message
 		}
 	case JoinRoomAction:
@@ -147,10 +147,14 @@ func (c *Client) handleJoinRoomMessage(m Message) {
 }
 
 func (c *Client) handleLeaveRoomMessage(m Message) {
-	room := c.hub.FindRoomByID(m.Target)
+	room := c.hub.FindRoomByID(m.Target.GetID())
 	if _, ok := c.rooms[room]; ok {
 		delete(c.rooms, room)
 	}
 
 	room.unregister <- c
+}
+
+func (c *Client) GetID() int {
+	return c.id
 }
