@@ -1,6 +1,6 @@
 version: '3.7'
 services:
-    database:
+    postgres:
         build: ./database
         environment:
             POSTGRES_DB: galanonim
@@ -25,7 +25,7 @@ services:
         ports: 
             - "8888:8888"
         depends_on: 
-            - database
+            - postgres
             - redis
         networks: 
             - default

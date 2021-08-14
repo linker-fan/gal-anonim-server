@@ -1,7 +1,7 @@
 package config
 
 import (
-	"fmt"
+	"linker-fan/gal-anonim-server/server/utils"
 	"log"
 	"os"
 
@@ -14,22 +14,34 @@ type Config struct {
 		Port string `yaml:"port"`
 		Mode string `yaml:"mode"`
 	} `yaml:"server"`
-	Database struct {
+	Postgres struct {
 		Host     string `yaml:"host"`
 		Port     string `yaml:"port"`
 		Name     string `yaml:"name"`
 		User     string `yaml:"user"`
 		Password string `yaml:"password"`
-	} `yaml:"database"`
+	} `yaml:"postgres"`
 	Jwt struct {
 		TokenSecret string `yaml:"tokenSecret"`
 		ExpTime     int64  `yaml:"expTime"`
 		Issuer      string `yaml:"issuer"`
 	} `yaml:"jwt"`
+	Redis struct {
+		Host     string `yaml:"host"`
+		Port     string `yaml:"port"`
+		Password string `yaml:"password"`
+		DB       int    `yaml:"db"`
+	} `yaml:"redis"`
 }
 
 func NewConfig(path string) (*Config, error) {
 	config := &Config{}
+
+	err := utils.ValidatePath(path)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
 
 	file, err := os.Open(path)
 	if err != nil {
@@ -45,16 +57,4 @@ func NewConfig(path string) (*Config, error) {
 	}
 
 	return config, nil
-}
-
-func validatePath(path string) error {
-	s, err := os.Stat(path)
-	if err != nil {
-		return err
-	}
-
-	if s.IsDir() {
-		return fmt.Errorf("'%s' is a directory, not a normal file", path)
-	}
-	return nil
 }

@@ -17,9 +17,14 @@ func init() {
 	c = conf
 }
 
-func TestConnect(t *testing.T) {
-	err := Connect(c)
+func TestConnectToPostgres(t *testing.T) {
+	err := ConnectToPostgres(c)
 	if err != nil {
 		t.Fail()
 	}
+}
+
+func TestConnectToRedis(t *testing.T) {
+	redisClient := ConnectToRedis(c)
+	redisClient.Close()
 }
