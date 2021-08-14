@@ -30,6 +30,7 @@ func ChatWebsocket(c *gin.Context) {
 	if !exists {
 		c.Status(http.StatusInternalServerError)
 	}
+
 	serveWS(c.Writer, c.Request, username.(string), id.(int))
 }
 

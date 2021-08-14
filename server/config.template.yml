@@ -3,7 +3,7 @@ server:
   port: "8888"
   mode: "default"
 database:
-  host: "localhost"
+  host: "database"
   port: "5432"  
   name: "galanonim"
   user: "galanonimuser"

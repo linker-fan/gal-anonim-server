@@ -10,15 +10,24 @@ services:
             - data:/var/lib/postgresql/data
         ports: 
             - "5432:5432"
+        networks: 
+            - default
     redis:
         image: redis:alpine
         ports:
-            - "6364:6379"    
+            - "6364:6379"   
+        networks: 
+            - default 
     server:
         build:
             context: ./server
             dockerfile: Dockerfile
         ports: 
             - "8888:8888"
+        depends_on: 
+            - database
+            - redis
+        networks: 
+            - default
 volumes:
     data:

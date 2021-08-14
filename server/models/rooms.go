@@ -10,4 +10,5 @@ type Room struct {
 	OwnerID      int       `json:"owner_id"`
 	Created      time.Time `json:"created"`
 	Updated      time.Time `json:"updated"`
+	Private      bool      `json:"private"`
 }
