@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"linker-fan/gal-anonim-server/server/hub"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -16,7 +17,11 @@ var wsupgrader = websocket.Upgrader{
 var wsServer *hub.Hub
 
 func init() {
-	wsServer = hub.NewHub()
+	wsServer, err := hub.NewHub()
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
 	go wsServer.Run()
 }
 

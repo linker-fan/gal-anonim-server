@@ -21,6 +21,23 @@ func InsertMember(roomID, userID int) error {
 	return nil
 }
 
+func InsertMewmberWithUniqueRoomID(uniqueRoomID string, userID int) error {
+	//get normal room id
+	id, err := GetRoomIDByUniqueRoomID(uniqueRoomID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = InsertMember(id, userID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
 func CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID string, userID int) error {
 	var roomid int
 	var id int
@@ -68,5 +85,20 @@ func DeleteMember(roomID, userID int) error {
 		return err
 	}
 
+	return nil
+}
+
+func DeleteMemberWithUnqueRoomID(uniqueRoomID string, userID int) error {
+	id, err := GetRoomIDByUniqueRoomID(uniqueRoomID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	err = DeleteMember(id, userID)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
 	return nil
 }
