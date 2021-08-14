@@ -65,6 +65,16 @@ func (h *Hub) FindRoomByID(id string) *Room {
 	return nil
 }
 
+func (h *Hub) findClientByID(id int) *Client {
+	for c := range h.Clients {
+		if c.GetID() == id {
+			return c
+		}
+	}
+
+	return nil
+}
+
 func (h *Hub) notifyClientJoined(c *Client) {
 	message := &Message{
 		Action: UserJoinedAction,
