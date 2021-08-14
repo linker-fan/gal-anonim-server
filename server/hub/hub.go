@@ -1,21 +1,35 @@
 package hub
 
+import (
+	"linker-fan/gal-anonim-server/server/database"
+	"linker-fan/gal-anonim-server/server/models"
+	"log"
+)
+
 type Hub struct {
 	Clients    map[*Client]bool
 	Register   chan *Client
 	Unregister chan *Client
 	broadcast  chan []byte
 	rooms      map[*Room]bool
+	users      []*models.User
 }
 
-func NewHub() *Hub {
+func NewHub() (*Hub, error) {
+	users, err := database.GetAllUsers()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
 	return &Hub{
 		Clients:    make(map[*Client]bool),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		broadcast:  make(chan []byte),
 		rooms:      make(map[*Room]bool),
-	}
+		users:      users,
+	}, nil
 }
 
 func (h *Hub) Run() {

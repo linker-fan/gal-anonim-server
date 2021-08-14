@@ -1,6 +1,10 @@
 package hub
 
-import "fmt"
+import (
+	"fmt"
+	"linker-fan/gal-anonim-server/server/database"
+	"log"
+)
 
 const welcomeMessage = "%s joined the chat"
 
@@ -30,26 +34,42 @@ func (r *Room) Run() {
 	for {
 		select {
 		case client := <-r.register:
-			r.registerClientInRoom(client)
+			if err := r.registerClientInRoom(client); err != nil {
+				log.Println(err)
+			}
 		case client := <-r.unregister:
-			r.unregisterClientInRoom(client)
+			if err := r.unregisterClientInRoom(client); err != nil {
+				log.Println(err)
+			}
 		case message := <-r.broadcast:
 			r.broadcastToClientsInRoom(message.encode())
 		}
 	}
 }
 
-func (r *Room) registerClientInRoom(client *Client) {
+func (r *Room) registerClientInRoom(client *Client) error {
 	if !r.Private {
 		r.notifyClientJoined(client)
 	}
 	r.clients[client] = true
+	err := database.InsertMewmberWithUniqueRoomID(r.id, client.id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
-func (r *Room) unregisterClientInRoom(client *Client) {
+func (r *Room) unregisterClientInRoom(client *Client) error {
 	if _, ok := r.clients[client]; ok {
 		delete(r.clients, client)
+		err := database.DeleteMemberWithUnqueRoomID(r.id, client.id)
+		if err != nil {
+			return err
+		}
 	}
+
+	return nil
 }
 
 func (r *Room) broadcastToClientsInRoom(message []byte) {
