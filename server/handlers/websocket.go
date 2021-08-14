@@ -17,7 +17,7 @@ var wsServer *hub.Hub
 
 func init() {
 	wsServer = hub.NewHub()
-	wsServer.Run()
+	go wsServer.Run()
 }
 
 func ChatWebsocket(c *gin.Context) {

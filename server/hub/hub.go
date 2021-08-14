@@ -49,10 +49,11 @@ func (h *Hub) UnregisterClient(client *Client) {
 	}
 }
 
-func (h *Hub) CreateRoom(id string, private bool) {
+func (h *Hub) CreateRoom(id string, private bool) *Room {
 	room := NewRoom(id, private)
 	go room.Run()
 	h.rooms[room] = true
+	return room
 }
 
 func (h *Hub) FindRoomByID(id string) *Room {
@@ -101,4 +102,9 @@ func (h *Hub) listOnlineClients(c *Client) {
 		}
 		c.send <- message.encode()
 	}
+}
+
+func (h *Hub) findRoomByName(name string) *Room {
+	var room *Room
+	return room
 }

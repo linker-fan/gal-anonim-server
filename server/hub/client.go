@@ -3,6 +3,7 @@ package hub
 import (
 	"encoding/json"
 	"log"
+	"strconv"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -132,22 +133,32 @@ func (c *Client) handleNewMessage(jsonMessage []byte) {
 		c.handleJoinRoomMessage(message)
 	case LeaveRoomAction:
 		c.handleLeaveRoomMessage(message)
+	case JoinPrivateRoomAction:
+		c.handleJoinRoomPrivateMessage(message)
 	}
 }
 
 func (c *Client) handleJoinRoomMessage(m Message) {
-	roomID := m.Message
-	room := c.hub.FindRoomByID(roomID)
-	if room == nil {
-		//room = c.hub.CreateRoom(roomID)
-	} else {
-		c.rooms[room] = true
-		room.register <- c
+	roomName := m.Message
+	c.joinRoom(roomName, nil)
+}
+
+func (c *Client) handleJoinRoomPrivateMessage(m Message) {
+	target := c.hub.findClientByID(m.Sender.GetID())
+	if target == nil {
+		return
 	}
+
+	roomName := m.Message + strconv.Itoa(c.id)
+	c.joinRoom(roomName, target)
+	target.joinRoom(roomName, c)
 }
 
 func (c *Client) handleLeaveRoomMessage(m Message) {
 	room := c.hub.FindRoomByID(m.Target.GetID())
+	if room == nil {
+		return
+	}
 	if _, ok := c.rooms[room]; ok {
 		delete(c.rooms, room)
 	}
@@ -157,4 +168,38 @@ func (c *Client) handleLeaveRoomMessage(m Message) {
 
 func (c *Client) GetID() int {
 	return c.id
+}
+
+func (c *Client) joinRoom(roomName string, sender *Client) {
+	room := c.hub.findRoomByName(roomName)
+	if room == nil {
+		room = c.hub.CreateRoom(roomName, sender != nil)
+	}
+
+	if sender == nil && room.Private {
+		return
+	}
+
+	if !c.isInRoom(room) {
+		c.rooms[room] = true
+		room.register <- c
+		c.notifyRoomJoined(room, sender)
+	}
+}
+
+func (c *Client) isInRoom(r *Room) bool {
+	if _, ok := c.rooms[r]; ok {
+		return true
+	}
+	return false
+}
+
+func (c *Client) notifyRoomJoined(r *Room, s *Client) {
+	m := Message{
+		Action: RoomJoinedAction,
+		Target: r,
+		Sender: s,
+	}
+
+	c.send <- m.encode()
 }
