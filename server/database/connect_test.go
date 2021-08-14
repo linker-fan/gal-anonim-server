@@ -18,7 +18,7 @@ func init() {
 }
 
 func TestConnect(t *testing.T) {
-	err := Connect(c)
+	err := ConnectToPostgres(c)
 	if err != nil {
 		t.Fail()
 	}

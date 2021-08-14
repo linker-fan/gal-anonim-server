@@ -11,7 +11,7 @@ import (
 
 var db *sql.DB
 
-func Connect(c *config.Config) error {
+func ConnectToPostgres(c *config.Config) error {
 	psqlInfo := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", c.Database.User, c.Database.Password, c.Database.Host, c.Database.Port, c.Database.Name)
 	log.Println(psqlInfo)
 
@@ -27,5 +27,9 @@ func Connect(c *config.Config) error {
 
 	db = database
 	log.Println("[+] Connected to the database")
+	return nil
+}
+
+func ConnectToRedis(c *config.Config) error {
 	return nil
 }
