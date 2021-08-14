@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"errors"
+	"linker-fan/gal-anonim-server/server/models"
 	"log"
 	"time"
 )
@@ -78,4 +79,27 @@ func SetPin(pin string, id int) error {
 	}
 
 	return nil
+}
+
+func GetAllUsers() ([]*models.User, error) {
+	var users []*models.User
+
+	rows, err := db.Query("select id, username, isAdmin, created, updated from users")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	for rows.Next() {
+		var user models.User
+		err := rows.Scan(&user.ID, &user.Username, &user.IsAdmin, &user.Created, &user.Updated)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+
+		users = append(users, &user)
+	}
+
+	return users, nil
 }
