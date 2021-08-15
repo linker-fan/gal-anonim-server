@@ -28,3 +28,21 @@ func (m *Message) encode() []byte {
 
 	return json
 }
+
+func (m *Message) UnmarshalJSON(data []byte) error {
+	type Alias Message
+	msg := &struct {
+		Sender Client `json:"sender"`
+		*Alias
+	}{
+		Alias: (*Alias)(m),
+	}
+
+	if err := json.Unmarshal(data, &msg); err != nil {
+		return err
+	}
+
+	m.Sender = &msg.Sender
+
+	return nil
+}

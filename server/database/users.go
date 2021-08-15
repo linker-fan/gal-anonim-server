@@ -103,3 +103,19 @@ func GetAllUsers() ([]*models.User, error) {
 
 	return users, nil
 }
+
+func DeleteUser(id int) error {
+	stmt, err := db.Prepare("delete from users where id=$1")
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	_, err = stmt.Exec(id)
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}

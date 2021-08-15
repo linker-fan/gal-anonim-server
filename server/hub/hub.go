@@ -63,6 +63,8 @@ func (h *Hub) registerClient(client *Client) {
 func (h *Hub) UnregisterClient(client *Client) {
 	if _, ok := h.Clients[client]; ok {
 		delete(h.Clients, client)
+		h.notifyClientLeft(client)
+
 	}
 }
 
@@ -124,4 +126,12 @@ func (h *Hub) listOnlineClients(c *Client) {
 func (h *Hub) findRoomByName(name string) *Room {
 	var room *Room
 	return room
+}
+
+func (h *Hub) publishClientleft(c *Client) error {
+
+	msg := &Message{
+		Action: UserLeftAction,
+		Sender: c,
+	}
 }

@@ -11,8 +11,9 @@ import (
 	_ "github.com/lib/pq"
 )
 
+//global variables
 var db *sql.DB
-var redisClient *redis.Client
+var RedisClient *redis.Client
 
 func ConnectToPostgres(c *config.Config) error {
 	psqlInfo := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", c.Postgres.User, c.Postgres.Password, c.Postgres.Host, c.Postgres.Port, c.Postgres.Name)
@@ -47,7 +48,7 @@ func ConnectToRedis(c *config.Config) error {
 		return err
 	}
 
-	redisClient = rdb
+	RedisClient = rdb
 	return nil
 
 }
