@@ -4,15 +4,18 @@ import (
 	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/models"
 	"log"
+
+	"github.com/go-redis/redis/v8"
 )
 
 type Hub struct {
-	Clients    map[*Client]bool
-	Register   chan *Client
-	Unregister chan *Client
-	broadcast  chan []byte
-	rooms      map[*Room]bool
-	users      []*models.User
+	Clients     map[*Client]bool
+	Register    chan *Client
+	Unregister  chan *Client
+	broadcast   chan []byte
+	rooms       map[*Room]bool
+	users       []*models.User
+	redisClient *redis.Client
 }
 
 func NewHub() (*Hub, error) {

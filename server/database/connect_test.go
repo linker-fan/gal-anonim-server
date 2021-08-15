@@ -25,6 +25,8 @@ func TestConnectToPostgres(t *testing.T) {
 }
 
 func TestConnectToRedis(t *testing.T) {
-	redisClient := ConnectToRedis(c)
-	redisClient.Close()
+	err := ConnectToRedis(c)
+	if err != nil {
+		t.Fail()
+	}
 }

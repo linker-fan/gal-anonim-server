@@ -19,6 +19,11 @@ func main() {
 		log.Fatal(err)
 	}
 
+	err = database.ConnectToRedis(c)
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	//api
 	router.Run(c.Server.Port, c.Server.Mode)
 }

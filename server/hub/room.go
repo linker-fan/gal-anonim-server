@@ -14,7 +14,7 @@ type Room struct {
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *Message
-	Private    bool `json:"private"`
+	private    bool `json:"private"`
 }
 
 func NewRoom(id string, private bool) *Room {
@@ -24,7 +24,7 @@ func NewRoom(id string, private bool) *Room {
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
 		broadcast:  make(chan *Message),
-		Private:    private,
+		private:    private,
 	}
 
 	return r
@@ -48,7 +48,7 @@ func (r *Room) Run() {
 }
 
 func (r *Room) registerClientInRoom(client *Client) error {
-	if !r.Private {
+	if !r.GetPrivate() {
 		r.notifyClientJoined(client)
 	}
 	r.clients[client] = true
@@ -90,4 +90,8 @@ func (r *Room) notifyClientJoined(c *Client) {
 
 func (r *Room) GetID() string {
 	return r.id
+}
+
+func (r *Room) GetPrivate() bool {
+	return r.private
 }

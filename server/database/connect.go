@@ -12,6 +12,7 @@ import (
 )
 
 var db *sql.DB
+var redisClient *redis.Client
 
 func ConnectToPostgres(c *config.Config) error {
 	psqlInfo := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", c.Postgres.User, c.Postgres.Password, c.Postgres.Host, c.Postgres.Port, c.Postgres.Name)
@@ -32,7 +33,7 @@ func ConnectToPostgres(c *config.Config) error {
 	return nil
 }
 
-func ConnectToRedis(c *config.Config) *redis.Client {
+func ConnectToRedis(c *config.Config) error {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     fmt.Sprintf("%v:%v", c.Redis.Host, c.Redis.Password),
 		Password: c.Redis.Password, // no password set
@@ -43,7 +44,10 @@ func ConnectToRedis(c *config.Config) *redis.Client {
 	_, err := rdb.Ping(context.Background()).Result()
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 
-	return rdb
+	redisClient = rdb
+	return nil
+
 }

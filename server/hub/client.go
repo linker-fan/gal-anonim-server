@@ -176,7 +176,7 @@ func (c *Client) joinRoom(roomName string, sender *Client) {
 		room = c.hub.CreateRoom(roomName, sender != nil)
 	}
 
-	if sender == nil && room.Private {
+	if sender == nil && room.GetPrivate() {
 		return
 	}
 
