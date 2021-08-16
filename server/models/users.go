@@ -2,6 +2,10 @@ package models
 
 import "time"
 
+type UserInterface interface {
+	GetID() int
+}
+
 type User struct {
 	ID           int       `json:"id"`
 	Username     string    `json:"username"`
@@ -10,4 +14,8 @@ type User struct {
 	Created      time.Time `json:"created"`
 	Updated      time.Time `json:"updated"`
 	Pin          *string   `json:"pin"`
+}
+
+func (u *User) GetID() int {
+	return u.ID
 }

@@ -2,7 +2,6 @@ package hub
 
 import (
 	"encoding/json"
-	"linker-fan/gal-anonim-server/server/models"
 	"log"
 	"strconv"
 	"time"
@@ -171,7 +170,7 @@ func (c *Client) GetID() int {
 	return c.id
 }
 
-func (c *Client) joinRoom(roomName string, sender *models.User) {
+func (c *Client) joinRoom(roomName string, sender *Client) {
 	room := c.hub.findRoomByName(roomName)
 	if room == nil {
 		room = c.hub.CreateRoom(roomName, sender != nil)
@@ -195,7 +194,7 @@ func (c *Client) isInRoom(r *Room) bool {
 	return false
 }
 
-func (c *Client) notifyRoomJoined(r *Room, s *models.User) {
+func (c *Client) notifyRoomJoined(r *Room, s *Client) {
 	m := Message{
 		Action: RoomJoinedAction,
 		Target: r,

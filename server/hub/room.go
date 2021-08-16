@@ -1,6 +1,7 @@
 package hub
 
 import (
+	"context"
 	"fmt"
 	"linker-fan/gal-anonim-server/server/database"
 	"log"
@@ -31,6 +32,9 @@ func NewRoom(id string, private bool) *Room {
 }
 
 func (r *Room) Run() {
+
+	go r.subscribeToRoomMessages()
+
 	for {
 		select {
 		case client := <-r.register:
@@ -42,7 +46,7 @@ func (r *Room) Run() {
 				log.Println(err)
 			}
 		case message := <-r.broadcast:
-			r.broadcastToClientsInRoom(message.encode())
+			r.publishRoomMessage(message.encode())
 		}
 	}
 }
@@ -85,7 +89,26 @@ func (r *Room) notifyClientJoined(c *Client) {
 		Message: fmt.Sprintf(welcomeMessage, c.username),
 	}
 
-	r.broadcastToClientsInRoom(message.encode())
+	r.publishRoomMessage(message.encode())
+}
+
+func (r *Room) publishRoomMessage(message []byte) error {
+	err := database.RedisClient.Publish(context.Background(), r.GetID(), message).Err()
+	if err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (r *Room) subscribeToRoomMessages() {
+	pubsub := database.RedisClient.Subscribe(context.Background(), r.GetID())
+	channel := pubsub.Channel()
+
+	for msg := range channel {
+		r.broadcastToClientsInRoom([]byte(msg.Payload))
+	}
 }
 
 func (r *Room) GetID() string {

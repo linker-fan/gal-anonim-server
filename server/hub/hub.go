@@ -1,12 +1,16 @@
 package hub
 
 import (
+	"context"
+	"encoding/json"
 	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/models"
 	"log"
 
 	"github.com/go-redis/redis/v8"
 )
+
+const PubSubGeneralChannel = "general"
 
 type Hub struct {
 	Clients     map[*Client]bool
@@ -114,12 +118,17 @@ func (h *Hub) notifyClientLeft(c *Client) {
 }
 
 func (h *Hub) listOnlineClients(c *Client) {
-	for existingClient := range h.Clients {
-		message := &Message{
-			Action: UserJoinedAction,
-			Sender: existingClient,
+	/*
+		for existingClient := range h.Clients {
+			message := &Message{
+				Action: UserJoinedAction,
+				Sender: existingClient,
+			}
+			c.send <- message.encode()
 		}
-		c.send <- message.encode()
+	*/
+
+	for _, users := range h.users {
 	}
 }
 
@@ -134,4 +143,56 @@ func (h *Hub) publishClientleft(c *Client) error {
 		Action: UserLeftAction,
 		Sender: c,
 	}
+
+	err := database.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err()
+	if err != nil {
+		log.Println(err)
+		return nil
+	}
+
+	return nil
+}
+
+func (h *Hub) publishClientJoined(c *Client) error {
+
+	msg := &Message{
+		Action: UserJoinedAction,
+		Sender: c,
+	}
+
+	if err := database.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err(); err != nil {
+		log.Println(err)
+		return err
+	}
+
+	return nil
+}
+
+func (h *Hub) listenPubSubChannel() {
+	pubsub := database.RedisClient.Subscribe(context.Background(), PubSubGeneralChannel)
+	channel := pubsub.Channel()
+
+	for msg := range channel {
+
+		var message Message
+		if err := json.Unmarshal([]byte(msg.Payload), &message); err != nil {
+			log.Printf("Error while unmarshaling JSON message: %v\n", err)
+			return
+		}
+
+		switch message.Action {
+		case UserJoinedAction:
+			h.handleUserJoined(message)
+		case UserLeftAction:
+			h.handleUserLeft(message)
+		}
+	}
+}
+
+func (h *Hub) handleUserJoined(message Message) {
+
+}
+
+func (h *Hub) handleUserLeft(message Message) {
+
 }
