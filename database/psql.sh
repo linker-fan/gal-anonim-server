@@ -1,1 +1,1 @@
-sudo docker-compose exec database psql -d galanonim -U galanonimuser
+sudo docker-compose exec postgres psql -d galanonim -U galanonimuser
