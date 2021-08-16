@@ -19,7 +19,7 @@ var wsServer *hub.Hub
 func init() {
 	wsServer, err := hub.NewHub()
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalf("hub.NewHub error: %v\n", err)
 		return
 	}
 	go wsServer.Run()

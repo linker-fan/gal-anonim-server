@@ -70,7 +70,6 @@ func (h *Hub) unregisterClient(client *Client) {
 	if _, ok := h.Clients[client]; ok {
 		delete(h.Clients, client)
 		h.publishClientleft(client)
-
 	}
 }
 

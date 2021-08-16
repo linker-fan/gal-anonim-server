@@ -91,14 +91,14 @@ func GetAllUsers() ([]*models.User, error) {
 	}
 
 	for rows.Next() {
-		var user models.User
+		var user *models.User
 		err := rows.Scan(&user.ID, &user.Username, &user.IsAdmin, &user.Created, &user.Updated)
 		if err != nil {
 			log.Println(err)
 			return nil, err
 		}
 
-		users = append(users, &user)
+		users = append(users, user)
 	}
 
 	return users, nil

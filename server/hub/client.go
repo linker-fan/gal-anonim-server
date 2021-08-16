@@ -167,10 +167,6 @@ func (c *Client) handleLeaveRoomMessage(m Message) {
 	room.unregister <- c
 }
 
-func (c *Client) GetID() int {
-	return c.id
-}
-
 func (c *Client) joinRoom(roomName string, sender *Client) {
 	room := c.hub.findRoomByName(roomName)
 	if room == nil {
@@ -188,11 +184,8 @@ func (c *Client) joinRoom(roomName string, sender *Client) {
 	}
 }
 
-func (c *Client) isInRoom(r *Room) bool {
-	if _, ok := c.rooms[r]; ok {
-		return true
-	}
-	return false
+func (c *Client) inviteTargetUser() {
+
 }
 
 func (c *Client) notifyRoomJoined(r *Room, s *Client) {
@@ -212,4 +205,15 @@ func (c *Client) MapIntoUser() *models.User {
 	}
 
 	return u
+}
+
+func (c *Client) GetID() int {
+	return c.id
+}
+
+func (c *Client) isInRoom(r *Room) bool {
+	if _, ok := c.rooms[r]; ok {
+		return true
+	}
+	return false
 }
