@@ -40,12 +40,14 @@ func NewHub() (*Hub, error) {
 }
 
 func (h *Hub) Run() {
+	go h.listenPubSubChannel()
+
 	for {
 		select {
 		case client := <-h.Register:
 			h.registerClient(client)
 		case client := <-h.Unregister:
-			h.UnregisterClient(client)
+			h.unregisterClient(client)
 		case message := <-h.broadcast:
 			h.broadcastToClients(message)
 		}
@@ -59,15 +61,15 @@ func (h *Hub) broadcastToClients(message []byte) {
 }
 
 func (h *Hub) registerClient(client *Client) {
-	h.notifyClientJoined(client)
+	h.publishClientJoined(client)
 	h.listOnlineClients(client)
 	h.Clients[client] = true
 }
 
-func (h *Hub) UnregisterClient(client *Client) {
+func (h *Hub) unregisterClient(client *Client) {
 	if _, ok := h.Clients[client]; ok {
 		delete(h.Clients, client)
-		h.notifyClientLeft(client)
+		h.publishClientleft(client)
 
 	}
 }
@@ -118,17 +120,19 @@ func (h *Hub) notifyClientLeft(c *Client) {
 }
 
 func (h *Hub) listOnlineClients(c *Client) {
-	/*
-		for existingClient := range h.Clients {
-			message := &Message{
-				Action: UserJoinedAction,
-				Sender: existingClient,
-			}
-			c.send <- message.encode()
-		}
-	*/
 
-	for _, users := range h.users {
+	for _, user := range h.users {
+		sender := Client{
+			id:       user.ID,
+			username: user.Username,
+		}
+
+		message := &Message{
+			Action: UserJoinedAction,
+			Sender: &sender,
+		}
+
+		c.send <- message.encode()
 	}
 }
 
@@ -190,9 +194,17 @@ func (h *Hub) listenPubSubChannel() {
 }
 
 func (h *Hub) handleUserJoined(message Message) {
-
+	h.users = append(h.users, message.Sender.MapIntoUser())
+	h.broadcastToClients(message.encode())
 }
 
 func (h *Hub) handleUserLeft(message Message) {
+	for i, u := range h.users {
+		if u.GetID() == message.Sender.GetID() {
+			h.users[i] = h.users[len(h.users)-1]
+			h.users = h.users[:len(h.users)-1]
+		}
+	}
 
+	h.broadcastToClients(message.encode())
 }

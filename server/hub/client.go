@@ -2,6 +2,7 @@ package hub
 
 import (
 	"encoding/json"
+	"linker-fan/gal-anonim-server/server/models"
 	"log"
 	"strconv"
 	"time"
@@ -202,4 +203,13 @@ func (c *Client) notifyRoomJoined(r *Room, s *Client) {
 	}
 
 	c.send <- m.encode()
+}
+
+func (c *Client) MapIntoUser() *models.User {
+	u := &models.User{
+		ID:       c.id,
+		Username: c.username,
+	}
+
+	return u
 }
