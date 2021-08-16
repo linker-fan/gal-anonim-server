@@ -15,6 +15,11 @@ import (
 var db *sql.DB
 var RedisClient *redis.Client
 
+type DatabaseAPI struct {
+	Postgres *sql.DB
+	Redis    *redis.Client
+}
+
 func ConnectToPostgres(c *config.Config) error {
 	psqlInfo := fmt.Sprintf("postgres://%v:%v@%v:%v/%v?sslmode=disable", c.Postgres.User, c.Postgres.Password, c.Postgres.Host, c.Postgres.Port, c.Postgres.Name)
 	log.Println(psqlInfo)
@@ -36,7 +41,7 @@ func ConnectToPostgres(c *config.Config) error {
 
 func ConnectToRedis(c *config.Config) error {
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     fmt.Sprintf("%v:%v", c.Redis.Host, c.Redis.Password),
+		Addr:     fmt.Sprintf("%v:%v", c.Redis.Host, c.Redis.Port),
 		Password: c.Redis.Password, // no password set
 		DB:       c.Redis.DB,       // use default DB
 	})
@@ -44,11 +49,10 @@ func ConnectToRedis(c *config.Config) error {
 	//check connection
 	_, err := rdb.Ping(context.Background()).Result()
 	if err != nil {
-		log.Println(err)
+		log.Printf("rdb.Ping failed: %v\n", err)
 		return err
 	}
 
 	RedisClient = rdb
 	return nil
-
 }

@@ -11,6 +11,7 @@ import (
 func Run(port string, mode string) {
 	//chat websocket
 	router := setupRoutes()
+	handlers.RunWsServer()
 	router.Run(fmt.Sprintf(":%s", port))
 }
 
