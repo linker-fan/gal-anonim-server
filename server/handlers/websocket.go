@@ -16,7 +16,7 @@ var wsupgrader = websocket.Upgrader{
 
 var wsServer *hub.Hub
 
-func init() {
+func RunWsServer() {
 	wsServer, err := hub.NewHub()
 	if err != nil {
 		log.Fatalf("hub.NewHub error: %v\n", err)

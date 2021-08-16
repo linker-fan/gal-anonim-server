@@ -23,6 +23,7 @@ type Hub struct {
 }
 
 func NewHub() (*Hub, error) {
+
 	users, err := database.GetAllUsers()
 	if err != nil {
 		log.Println(err)
