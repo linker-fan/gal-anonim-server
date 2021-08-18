@@ -119,7 +119,7 @@ func (a *API) DeleteRoomHandler(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 	}
 
-	go a.wsServer.DeleteRoom(uniqueRoomID)
+	a.wsServer.DeleteRoom(uniqueRoomID)
 
 	c.Status(http.StatusOK)
 }

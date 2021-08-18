@@ -1,9 +1,12 @@
 package database
 
 import (
+	"database/sql"
 	"linker-fan/gal-anonim-server/server/config"
 	"log"
 	"testing"
+
+	"github.com/DATA-DOG/go-sqlmock"
 )
 
 var c *config.Config
@@ -15,6 +18,17 @@ func init() {
 	}
 
 	c = conf
+}
+
+func NewMock() (*sql.DB, sqlmock.Sqlmock, error) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		log.Println(err)
+		return nil, nil, err
+	}
+
+	return db, mock, nil
+
 }
 
 func TestConnectToPostgres(t *testing.T) {
