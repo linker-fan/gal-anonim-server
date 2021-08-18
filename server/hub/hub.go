@@ -236,3 +236,10 @@ func (h *Hub) handleUserJoinPrivate(m Message) {
 		targetClient.joinRoom(m.Target.GetID(), m.Sender)
 	}
 }
+
+func (h *Hub) DeleteRoom(uniqueRoomID string) {
+	room := h.FindRoomByID(uniqueRoomID)
+	if _, ok := h.rooms[room]; ok {
+		delete(h.rooms, room)
+	}
+}

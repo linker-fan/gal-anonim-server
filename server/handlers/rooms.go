@@ -115,6 +115,12 @@ func (a *API) DeleteRoomHandler(c *gin.Context) {
 	}
 
 	err = a.dw.DeleteRoom(uniqueRoomID)
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+	}
+
+	go a.wsServer.DeleteRoom(uniqueRoomID)
+
 	c.Status(http.StatusOK)
 }
 

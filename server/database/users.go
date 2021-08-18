@@ -90,6 +90,8 @@ func (d *DatabaseWrapper) GetAllUsers() ([]*models.User, error) {
 		return nil, err
 	}
 
+	defer rows.Close()
+
 	for rows.Next() {
 		var user models.User
 		err := rows.Scan(&user.ID, &user.Username, &user.IsAdmin, &user.Created, &user.Updated)
