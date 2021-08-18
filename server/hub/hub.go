@@ -24,11 +24,13 @@ type Hub struct {
 
 func NewHub() (*Hub, error) {
 
-	users, err := database.GetAllUsers()
-	if err != nil {
-		log.Println(err)
-		return nil, err
-	}
+	/*
+		users, err := database.GetAllUsers()
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+	*/
 
 	return &Hub{
 		Clients:    make(map[*Client]bool),
@@ -36,7 +38,7 @@ func NewHub() (*Hub, error) {
 		Unregister: make(chan *Client),
 		broadcast:  make(chan []byte),
 		rooms:      make(map[*Room]bool),
-		users:      users,
+		//users:      users,
 	}, nil
 }
 

@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"database/sql"
-	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/utils"
 	"net/http"
 
@@ -16,7 +15,7 @@ type CreateRoomRequest struct {
 	Password2 string `json:"password2"`
 }
 
-func CreateRoomHandler(c *gin.Context) {
+func (a *API) CreateRoomHandler(c *gin.Context) {
 	var request CreateRoomRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -52,27 +51,27 @@ func CreateRoomHandler(c *gin.Context) {
 		return
 	}
 
-	roomID, err := database.InsertRoom(uniqueRoomID.String(), request.Name, passwordHash, ownerID.(int))
+	roomID, err := a.dw.InsertRoom(uniqueRoomID.String(), request.Name, passwordHash, ownerID.(int))
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
 	//add owner as the first member of the room
-	err = database.InsertMember(roomID, ownerID.(int))
+	err = a.dw.InsertMember(roomID, ownerID.(int))
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	wsServer.CreateRoom(uniqueRoomID.String(), false)
+	a.wsServer.CreateRoom(uniqueRoomID.String(), false)
 
 	c.JSON(http.StatusCreated, gin.H{
 		"unique_room_id": uniqueRoomID.String(),
 	})
 }
 
-func DeleteRoomHandler(c *gin.Context) {
+func (a *API) DeleteRoomHandler(c *gin.Context) {
 	uniqueRoomID := c.Param("uniqueRoomID")
 	if uniqueRoomID == "" {
 		c.Status(http.StatusBadRequest)
@@ -85,7 +84,7 @@ func DeleteRoomHandler(c *gin.Context) {
 		return
 	}
 
-	err := database.CheckIfUniqueRoomIDExists(uniqueRoomID)
+	err := a.dw.CheckIfUniqueRoomIDExists(uniqueRoomID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -96,7 +95,7 @@ func DeleteRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	err = a.dw.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err.Error() == "Not the owner" {
 			isAdmin, exists := c.Get("is_admin")
@@ -115,11 +114,11 @@ func DeleteRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.DeleteRoom(uniqueRoomID)
+	err = a.dw.DeleteRoom(uniqueRoomID)
 	c.Status(http.StatusOK)
 }
 
-func GetRoomMembersHandler(c *gin.Context) {
+func (a *API) GetRoomMembersHandler(c *gin.Context) {
 
 	uniqueRoomID := c.Param("uniqueRoomID")
 	if uniqueRoomID == "" {
@@ -134,7 +133,7 @@ func GetRoomMembersHandler(c *gin.Context) {
 	}
 
 	//check if room with this unique id exists
-	err := database.CheckIfUniqueRoomIDExists(uniqueRoomID)
+	err := a.dw.CheckIfUniqueRoomIDExists(uniqueRoomID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -146,7 +145,7 @@ func GetRoomMembersHandler(c *gin.Context) {
 	}
 
 	//check if user sending this request is a member of this room
-	err = database.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userID.(int))
+	err = a.dw.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusConflict)
@@ -158,7 +157,7 @@ func GetRoomMembersHandler(c *gin.Context) {
 	}
 
 	//get members of this room
-	members, err := database.GetRoomMembers(uniqueRoomID)
+	members, err := a.dw.GetRoomMembers(uniqueRoomID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -169,7 +168,7 @@ func GetRoomMembersHandler(c *gin.Context) {
 	})
 }
 
-func UpdateRoomDataHandler(c *gin.Context) {
+func (a *API) UpdateRoomDataHandler(c *gin.Context) {
 
 	uniqueRoomID := c.Param("uniqueRoomID")
 	if uniqueRoomID == "" {
@@ -183,7 +182,7 @@ func UpdateRoomDataHandler(c *gin.Context) {
 		return
 	}
 
-	err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	err := a.dw.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err.Error() == "Not the owner" {
 			isAdmin, exists := c.Get("is_admin")
@@ -219,7 +218,7 @@ func UpdateRoomDataHandler(c *gin.Context) {
 			return
 		}
 
-		err = database.UpdateRoomName(newName, uniqueRoomID)
+		err = a.dw.UpdateRoomName(newName, uniqueRoomID)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return
@@ -249,7 +248,7 @@ func UpdateRoomDataHandler(c *gin.Context) {
 			return
 		}
 
-		err = database.UpdateRoomPassword(hashedPassword, uniqueRoomID)
+		err = a.dw.UpdateRoomPassword(hashedPassword, uniqueRoomID)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return
@@ -268,7 +267,7 @@ type MemberRequest struct {
 	Username string `json:"username"`
 }
 
-func AddMemberToTheRoomHandler(c *gin.Context) {
+func (a *API) AddMemberToTheRoomHandler(c *gin.Context) {
 	var request MemberRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -287,7 +286,7 @@ func AddMemberToTheRoomHandler(c *gin.Context) {
 		return
 	}
 
-	err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	err := a.dw.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err.Error() == "Not the owner" {
 			isAdmin, exists := c.Get("is_admin")
@@ -307,7 +306,7 @@ func AddMemberToTheRoomHandler(c *gin.Context) {
 	}
 
 	//get users id
-	userToAddID, err := database.GetUserIDByUsername(request.Username)
+	userToAddID, err := a.dw.GetUserIDByUsername(request.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -319,7 +318,7 @@ func AddMemberToTheRoomHandler(c *gin.Context) {
 	}
 
 	//get room id by uniqueRoomID
-	roomID, err := database.GetRoomIDByUniqueRoomID(uniqueRoomID)
+	roomID, err := a.dw.GetRoomIDByUniqueRoomID(uniqueRoomID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -330,7 +329,7 @@ func AddMemberToTheRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.InsertMember(roomID, userToAddID)
+	err = a.dw.InsertMember(roomID, userToAddID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -340,7 +339,7 @@ func AddMemberToTheRoomHandler(c *gin.Context) {
 	return
 }
 
-func RemoveMemberFromTheRoomHandler(c *gin.Context) {
+func (a *API) RemoveMemberFromTheRoomHandler(c *gin.Context) {
 	var request MemberRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		c.Status(http.StatusBadRequest)
@@ -370,7 +369,7 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 		return
 	}
 
-	err := database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	err := a.dw.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err.Error() == "Not the owner" {
 			isAdmin, exists := c.Get("is_admin")
@@ -389,7 +388,7 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 		}
 	}
 
-	userToRemoveID, err := database.GetUserIDByUsername(request.Username)
+	userToRemoveID, err := a.dw.GetUserIDByUsername(request.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -400,7 +399,7 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 		}
 	}
 
-	roomID, err := database.GetRoomIDByUniqueRoomID(uniqueRoomID)
+	roomID, err := a.dw.GetRoomIDByUniqueRoomID(uniqueRoomID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -411,7 +410,7 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userToRemoveID)
+	err = a.dw.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userToRemoveID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusConflict)
@@ -422,7 +421,7 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.DeleteMember(roomID, userToRemoveID)
+	err = a.dw.DeleteMember(roomID, userToRemoveID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -433,7 +432,7 @@ func RemoveMemberFromTheRoomHandler(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func LeaveRoomHandler(c *gin.Context) {
+func (a *API) LeaveRoomHandler(c *gin.Context) {
 
 	uniqueRoomID := c.Param("uniqueRoomID")
 	if uniqueRoomID == "" {
@@ -447,7 +446,7 @@ func LeaveRoomHandler(c *gin.Context) {
 		return
 	}
 
-	roomID, err := database.GetRoomIDByUniqueRoomID(uniqueRoomID)
+	roomID, err := a.dw.GetRoomIDByUniqueRoomID(uniqueRoomID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -458,7 +457,7 @@ func LeaveRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userID.(int))
+	err = a.dw.CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusConflict)
@@ -470,7 +469,7 @@ func LeaveRoomHandler(c *gin.Context) {
 	}
 
 	//if user that want to leave the room is an admin, delete the whole room and it's members
-	err = database.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
+	err = a.dw.ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID, userID.(int))
 	if err != nil {
 		if err.Error() == "Not the owner" {
 			isAdmin, exists := c.Get("is_admin")
@@ -480,13 +479,13 @@ func LeaveRoomHandler(c *gin.Context) {
 			}
 
 			if isAdmin.(bool) {
-				err := database.DeleteRoom(uniqueRoomID)
+				err := a.dw.DeleteRoom(uniqueRoomID)
 				if err != nil {
 					c.Status(http.StatusInternalServerError)
 					return
 				}
 
-				err = database.DeleteAllRoomMembers(roomID)
+				err = a.dw.DeleteAllRoomMembers(roomID)
 				if err != nil {
 					c.Status(http.StatusInternalServerError)
 					return
@@ -495,7 +494,7 @@ func LeaveRoomHandler(c *gin.Context) {
 				c.Status(http.StatusOK)
 				return
 			} else {
-				err := database.DeleteMember(roomID, userID.(int))
+				err := a.dw.DeleteMember(roomID, userID.(int))
 				if err != nil {
 					c.Status(http.StatusInternalServerError)
 					return
@@ -509,13 +508,13 @@ func LeaveRoomHandler(c *gin.Context) {
 		}
 	}
 
-	err = database.DeleteRoom(uniqueRoomID)
+	err = a.dw.DeleteRoom(uniqueRoomID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	err = database.DeleteAllRoomMembers(roomID)
+	err = a.dw.DeleteAllRoomMembers(roomID)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

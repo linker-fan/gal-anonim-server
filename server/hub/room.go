@@ -32,6 +32,7 @@ func NewRoom(id string, private bool) *Room {
 }
 
 func (r *Room) Run() {
+	log.Printf("Running room with ID: %s\n", r.id)
 
 	go r.subscribeToRoomMessages()
 

@@ -7,8 +7,8 @@ import (
 	"time"
 )
 
-func InsertRoom(uniqueRoomID string, roomName string, passwordHash string, ownerID int) (int, error) {
-	stmt, err := db.Prepare("insert into rooms (id, uniqueRoomID, roomName, passwordHash, ownerID, created, updated) values (default, $1, $2, $3, $4, $5, $6) returning id")
+func (d *DatabaseWrapper) InsertRoom(uniqueRoomID string, roomName string, passwordHash string, ownerID int) (int, error) {
+	stmt, err := d.db.Prepare("insert into rooms (id, uniqueRoomID, roomName, passwordHash, ownerID, created, updated) values (default, $1, $2, $3, $4, $5, $6) returning id")
 	if err != nil {
 		log.Println(err)
 		return 0, err
@@ -24,9 +24,9 @@ func InsertRoom(uniqueRoomID string, roomName string, passwordHash string, owner
 	return roomID, nil
 }
 
-func CheckIfUniqueRoomIDExists(uniqueRoomID string) error {
+func (d *DatabaseWrapper) CheckIfUniqueRoomIDExists(uniqueRoomID string) error {
 	var id string
-	err := db.QueryRow("select uniqueRoomID from rooms where uniqueRoomID = $1", uniqueRoomID).Scan(&id)
+	err := d.db.QueryRow("select uniqueRoomID from rooms where uniqueRoomID = $1", uniqueRoomID).Scan(&id)
 	if err != nil {
 		return err
 	}
@@ -34,9 +34,9 @@ func CheckIfUniqueRoomIDExists(uniqueRoomID string) error {
 	return nil
 }
 
-func ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID string, userID int) error {
+func (d *DatabaseWrapper) ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID string, userID int) error {
 	var ownerID int
-	err := db.QueryRow("select ownerID from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(&ownerID)
+	err := d.db.QueryRow("select ownerID from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(&ownerID)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -50,8 +50,8 @@ func ChceckIfUserIsOwnerOfTheRoom(uniqueRoomID string, userID int) error {
 
 }
 
-func DeleteRoom(uniqueRoomID string) error {
-	stmt, err := db.Prepare("delete from rooms where uniqueRoomID=$1")
+func (d *DatabaseWrapper) DeleteRoom(uniqueRoomID string) error {
+	stmt, err := d.db.Prepare("delete from rooms where uniqueRoomID=$1")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -66,8 +66,8 @@ func DeleteRoom(uniqueRoomID string) error {
 	return nil
 }
 
-func UpdateRoomName(name, uniqueRoomID string) error {
-	stmt, err := db.Prepare("update rooms set roomName=$1 where uniqueRoomID=$2")
+func (d *DatabaseWrapper) UpdateRoomName(name, uniqueRoomID string) error {
+	stmt, err := d.db.Prepare("update rooms set roomName=$1 where uniqueRoomID=$2")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -82,8 +82,8 @@ func UpdateRoomName(name, uniqueRoomID string) error {
 	return nil
 }
 
-func UpdateRoomPassword(passowrdHash, uniqueRoomID string) error {
-	stmt, err := db.Prepare("update rooms set passwordHash=$1 where uniqueRoomID=$2")
+func (d *DatabaseWrapper) UpdateRoomPassword(passowrdHash, uniqueRoomID string) error {
+	stmt, err := d.db.Prepare("update rooms set passwordHash=$1 where uniqueRoomID=$2")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -98,8 +98,8 @@ func UpdateRoomPassword(passowrdHash, uniqueRoomID string) error {
 	return nil
 }
 
-func UpdateRoom(name, passwordHash, uniqueRoomID string) error {
-	stmt, err := db.Prepare("update rooms set roomName=$1, passwordHash=$2, updated=$3 where uniqueRoomID=$4")
+func (d *DatabaseWrapper) UpdateRoom(name, passwordHash, uniqueRoomID string) error {
+	stmt, err := d.db.Prepare("update rooms set roomName=$1, passwordHash=$2, updated=$3 where uniqueRoomID=$4")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -114,9 +114,9 @@ func UpdateRoom(name, passwordHash, uniqueRoomID string) error {
 	return nil
 }
 
-func GetRoomIDByUniqueRoomID(uniqueRoomID string) (int, error) {
+func (d *DatabaseWrapper) GetRoomIDByUniqueRoomID(uniqueRoomID string) (int, error) {
 	var id int
-	err := db.QueryRow("select id from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(&id)
+	err := d.db.QueryRow("select id from rooms where uniqueRoomID=$1", uniqueRoomID).Scan(&id)
 	if err != nil {
 		log.Println(err)
 		return 0, err
@@ -125,8 +125,8 @@ func GetRoomIDByUniqueRoomID(uniqueRoomID string) (int, error) {
 	return id, nil
 }
 
-func DeleteAllRoomMembers(roomID int) error {
-	stmt, err := db.Prepare("delete from members where roomID=$1")
+func (d *DatabaseWrapper) DeleteAllRoomMembers(roomID int) error {
+	stmt, err := d.db.Prepare("delete from members where roomID=$1")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -141,9 +141,9 @@ func DeleteAllRoomMembers(roomID int) error {
 	return nil
 }
 
-func GetRoomIDByName(name string) (int, error) {
+func (d *DatabaseWrapper) GetRoomIDByName(name string) (int, error) {
 	var id int
-	err := db.QueryRow("select id from rooms where roomName=$1", name).Scan(id)
+	err := d.db.QueryRow("select id from rooms where roomName=$1", name).Scan(id)
 	if err != nil {
 		log.Println(err)
 		return 0, err
@@ -152,7 +152,7 @@ func GetRoomIDByName(name string) (int, error) {
 	return id, nil
 }
 
-func GetRoom(uniqueRoomID string) (*models.Room, error) {
+func (d *DatabaseWrapper) GetRoom(uniqueRoomID string) (*models.Room, error) {
 	var room models.Room
 	//err := db.QueryRow("select uniqueR")
 

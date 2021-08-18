@@ -10,8 +10,8 @@ import (
 
 //InsertUser takes username and hashed password from the register handler and creates a new row in users table. by default new user is not an admin
 //@author hyperxpizza
-func InsertUser(username, passwordHash string) error {
-	stmt, err := db.Prepare("insert into users(id,username,passwordHash,isAdmin,created,updated) values (default, $1, $2, $3, $4, $5)")
+func (d *DatabaseWrapper) InsertUser(username, passwordHash string) error {
+	stmt, err := d.db.Prepare("insert into users(id,username,passwordHash,isAdmin,created,updated) values (default, $1, $2, $3, $4, $5)")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -28,9 +28,9 @@ func InsertUser(username, passwordHash string) error {
 
 //CheckIfUsernameExists queries the users table to check if row with username given as an argument to the function already exists in the database
 //@author hyperxpizza
-func CheckIfUsernameExists(username string) error {
+func (d *DatabaseWrapper) CheckIfUsernameExists(username string) error {
 	var u string
-	err := db.QueryRow("select username from users where username=$1", username).Scan(&u)
+	err := d.db.QueryRow("select username from users where username=$1", username).Scan(&u)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil
@@ -42,11 +42,11 @@ func CheckIfUsernameExists(username string) error {
 	return errors.New("Username already taken")
 }
 
-func GetIDAndPasswordByUsername(username string) (int, string, bool, error) {
+func (d *DatabaseWrapper) GetIDAndPasswordByUsername(username string) (int, string, bool, error) {
 	var id int
 	var passwordHash string
 	var isAdmin bool
-	err := db.QueryRow("select id, passwordHash, isAdmin from users where username=$1", username).Scan(&id, &passwordHash, &isAdmin)
+	err := d.db.QueryRow("select id, passwordHash, isAdmin from users where username=$1", username).Scan(&id, &passwordHash, &isAdmin)
 	if err != nil {
 		return 0, "", false, err
 	}
@@ -54,9 +54,9 @@ func GetIDAndPasswordByUsername(username string) (int, string, bool, error) {
 	return id, passwordHash, isAdmin, nil
 }
 
-func GetUserIDByUsername(username string) (int, error) {
+func (d *DatabaseWrapper) GetUserIDByUsername(username string) (int, error) {
 	var id int
-	err := db.QueryRow("select id from users where username=$1", username).Scan(&id)
+	err := d.db.QueryRow("select id from users where username=$1", username).Scan(&id)
 	if err != nil {
 		log.Println(err)
 		return 0, nil
@@ -65,8 +65,8 @@ func GetUserIDByUsername(username string) (int, error) {
 	return id, nil
 }
 
-func SetPin(pin string, id int) error {
-	stmt, err := db.Prepare("update users set pin=$1 where id=$2")
+func (d *DatabaseWrapper) SetPin(pin string, id int) error {
+	stmt, err := d.db.Prepare("update users set pin=$1 where id=$2")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -81,10 +81,10 @@ func SetPin(pin string, id int) error {
 	return nil
 }
 
-func GetAllUsers() ([]*models.User, error) {
+func (d *DatabaseWrapper) GetAllUsers() ([]*models.User, error) {
 	var users []*models.User
 
-	rows, err := db.Query("select id, username, isAdmin, created, updated from users")
+	rows, err := d.db.Query("select id, username, isAdmin, created, updated from users")
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -104,8 +104,8 @@ func GetAllUsers() ([]*models.User, error) {
 	return users, nil
 }
 
-func DeleteUser(id int) error {
-	stmt, err := db.Prepare("delete from users where id=$1")
+func (d *DatabaseWrapper) DeleteUser(id int) error {
+	stmt, err := d.db.Prepare("delete from users where id=$1")
 	if err != nil {
 		log.Println(err)
 		return err

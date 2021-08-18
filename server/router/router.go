@@ -2,57 +2,65 @@ package router
 
 import (
 	"fmt"
+	"linker-fan/gal-anonim-server/server/config"
 	"linker-fan/gal-anonim-server/server/handlers"
 	"linker-fan/gal-anonim-server/server/middleware"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
 
-func Run(port string, mode string) {
-	//chat websocket
-	router := setupRoutes()
-	handlers.RunWsServer()
+func Run(port string, mode string, c *config.Config) {
+
+	router, err := setupRoutes(c)
+	if err != nil {
+		log.Fatal(err)
+	}
 	router.Run(fmt.Sprintf(":%s", port))
 }
 
-func setupRoutes() *gin.Engine {
+func setupRoutes(c *config.Config) (*gin.Engine, error) {
 	r := gin.New()
-
 	r.Use(gin.Logger())
 	r.Use(gin.Recovery())
 
+	api, err := handlers.NewAPIWrapper(c)
+	if err != nil {
+		return nil, err
+	}
+
 	auth := r.Group("/users")
 	{
-		auth.POST("/register", handlers.Register)
-		auth.POST("/login", handlers.Login)
+		auth.POST("/register", api.Register)
+		auth.POST("/login", api.Login)
 	}
 
 	protected := r.Group("/protected")
 	protected.Use(middleware.JwtMiddleware())
 	{
-		protected.GET("/me", handlers.MeHandler)
-		protected.POST("/refresh_token", handlers.RefreshTokenHandler)
-		protected.POST("/pin", handlers.SetPinHandler)
+		protected.GET("/me", api.MeHandler)
+		protected.POST("/refresh_token", api.RefreshTokenHandler)
+		protected.POST("/pin", api.SetPinHandler)
 	}
 
 	room := r.Group("/room")
 	room.Use(middleware.JwtMiddleware())
 	{
-		room.POST("", handlers.CreateRoomHandler)
-		room.DELETE("/:uniqueRoomID", handlers.DeleteRoomHandler)
-		room.PUT("/:uniqueRoomID", handlers.UpdateRoomDataHandler)
-		room.GET("/:uniqueRoomID/members", handlers.GetRoomMembersHandler)
-		room.POST("/:uniqueRoomID/add_member", handlers.AddMemberToTheRoomHandler)
-		room.DELETE("/:uniqueRoomID/remove_member", handlers.RemoveMemberFromTheRoomHandler)
-		room.DELETE("/:uniqueRoomID/leave", handlers.LeaveRoomHandler)
+		room.POST("", api.CreateRoomHandler)
+		room.DELETE("/:uniqueRoomID", api.DeleteRoomHandler)
+		room.PUT("/:uniqueRoomID", api.UpdateRoomDataHandler)
+		room.GET("/:uniqueRoomID/members", api.GetRoomMembersHandler)
+		room.POST("/:uniqueRoomID/add_member", api.AddMemberToTheRoomHandler)
+		room.DELETE("/:uniqueRoomID/remove_member", api.RemoveMemberFromTheRoomHandler)
+		room.DELETE("/:uniqueRoomID/leave", api.LeaveRoomHandler)
 	}
 
 	chat := r.Group("/chat")
 	chat.Use(middleware.JwtMiddleware())
 	chat.Use(middleware.ChatMiddleware())
 	{
-		chat.GET("/ws", handlers.ChatWebsocket)
+		chat.GET("/ws", api.ChatWebsocket)
 	}
 
-	return r
+	return r, nil
 }

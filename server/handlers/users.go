@@ -3,7 +3,6 @@ package handlers
 import (
 	"database/sql"
 	"linker-fan/gal-anonim-server/server/auth"
-	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/utils"
 	"net/http"
 
@@ -18,7 +17,7 @@ type RegisterRequest struct {
 
 //Register handler validates json and inserts new user into the database
 //@author hyperxpizza
-func Register(c *gin.Context) {
+func (a *API) Register(c *gin.Context) {
 	var request RegisterRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -34,7 +33,7 @@ func Register(c *gin.Context) {
 	}
 
 	//check if username is already taken
-	err = database.CheckIfUsernameExists(request.Username)
+	err = a.dw.CheckIfUsernameExists(request.Username)
 	if err != nil {
 		if err.Error() == "Username already taken" {
 			c.Status(http.StatusConflict)
@@ -66,7 +65,7 @@ func Register(c *gin.Context) {
 	}
 
 	//insert user into the database
-	err = database.InsertUser(request.Username, passwordHash)
+	err = a.dw.InsertUser(request.Username, passwordHash)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
@@ -85,7 +84,7 @@ type LoginRequest struct {
 //Login function validates username and password given as json through request body
 //If the username and password are valid and matching, sets http Cookie with jwt token
 //@author hyperxpizza
-func Login(c *gin.Context) {
+func (a *API) Login(c *gin.Context) {
 	var request LoginRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -94,7 +93,7 @@ func Login(c *gin.Context) {
 	}
 
 	//check if username exists in the database and get users password and id
-	id, passwordHash, isAdmin, err := database.GetIDAndPasswordByUsername(request.Username)
+	id, passwordHash, isAdmin, err := a.dw.GetIDAndPasswordByUsername(request.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			c.Status(http.StatusNotFound)
@@ -135,7 +134,7 @@ func Login(c *gin.Context) {
 
 //MeHandler returns data set in the context from jwt token
 //@author hyperxpizza
-func MeHandler(c *gin.Context) {
+func (a *API) MeHandler(c *gin.Context) {
 	username, exists := c.Get("username")
 	if !exists {
 		c.Status(http.StatusInternalServerError)
@@ -164,7 +163,7 @@ func MeHandler(c *gin.Context) {
 
 //RefreshTokenHandler creates a new token and sets a new, valid cookie
 //@author hyperxpizza
-func RefreshTokenHandler(c *gin.Context) {
+func (a *API) RefreshTokenHandler(c *gin.Context) {
 	username, exists := c.Get("username")
 	if !exists {
 		c.Status(http.StatusInternalServerError)
@@ -206,7 +205,7 @@ type SetPinRequest struct {
 	Pin string `json:"pin"`
 }
 
-func SetPinHandler(c *gin.Context) {
+func (a *API) SetPinHandler(c *gin.Context) {
 	var request SetPinRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -225,7 +224,7 @@ func SetPinHandler(c *gin.Context) {
 		return
 	}
 
-	if err := database.SetPin(request.Pin, id.(int)); err != nil {
+	if err := a.dw.SetPin(request.Pin, id.(int)); err != nil {
 		c.Status(http.StatusInternalServerError)
 		return
 	}

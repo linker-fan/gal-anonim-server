@@ -18,14 +18,14 @@ func init() {
 }
 
 func TestConnectToPostgres(t *testing.T) {
-	err := ConnectToPostgres(c)
+	_, err := connectToPostgres(c)
 	if err != nil {
 		t.Fail()
 	}
 }
 
 func TestConnectToRedis(t *testing.T) {
-	err := ConnectToRedis(c)
+	_, err := connectToRedis(c)
 	if err != nil {
 		t.Fail()
 	}

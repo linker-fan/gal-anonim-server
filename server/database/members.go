@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func InsertMember(roomID, userID int) error {
-	stmt, err := db.Prepare("insert into members (id, roomID, userID, joined) values (default, $1, $2, $3)")
+func (d *DatabaseWrapper) InsertMember(roomID, userID int) error {
+	stmt, err := d.db.Prepare("insert into members (id, roomID, userID, joined) values (default, $1, $2, $3)")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -21,15 +21,15 @@ func InsertMember(roomID, userID int) error {
 	return nil
 }
 
-func InsertMewmberWithUniqueRoomID(uniqueRoomID string, userID int) error {
+func (d *DatabaseWrapper) InsertMewmberWithUniqueRoomID(uniqueRoomID string, userID int) error {
 	//get normal room id
-	id, err := GetRoomIDByUniqueRoomID(uniqueRoomID)
+	id, err := d.GetRoomIDByUniqueRoomID(uniqueRoomID)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = InsertMember(id, userID)
+	err = d.InsertMember(id, userID)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -38,10 +38,10 @@ func InsertMewmberWithUniqueRoomID(uniqueRoomID string, userID int) error {
 	return nil
 }
 
-func CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID string, userID int) error {
+func (d *DatabaseWrapper) CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID string, userID int) error {
 	var roomid int
 	var id int
-	err := db.QueryRow("select distinct m.userid, r.id from members as m join rooms as r on r.id = m.roomid where r.uniqueroomid=$1 and m.userid=$2", uniqueRoomID, userID).Scan(&id, &roomid)
+	err := d.db.QueryRow("select distinct m.userid, r.id from members as m join rooms as r on r.id = m.roomid where r.uniqueroomid=$1 and m.userid=$2", uniqueRoomID, userID).Scan(&id, &roomid)
 	if err != nil {
 		log.Println(err)
 		return err
@@ -50,9 +50,9 @@ func CheckIfUserIsAMemberOfASpecificRoom(uniqueRoomID string, userID int) error 
 	return nil
 }
 
-func GetRoomMembers(uniqueRoomID string) ([]string, error) {
+func (d *DatabaseWrapper) GetRoomMembers(uniqueRoomID string) ([]string, error) {
 	var usernames []string
-	rows, err := db.Query("select u.username from rooms as r join members as m on m.roomid = r.id join users as u on m.userid = u.id where r.uniqueroomid=$1", uniqueRoomID)
+	rows, err := d.db.Query("select u.username from rooms as r join members as m on m.roomid = r.id join users as u on m.userid = u.id where r.uniqueroomid=$1", uniqueRoomID)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -72,8 +72,8 @@ func GetRoomMembers(uniqueRoomID string) ([]string, error) {
 	return usernames, nil
 }
 
-func DeleteMember(roomID, userID int) error {
-	stmt, err := db.Prepare("delete from members where roomID=$1 and userID=$2")
+func (d *DatabaseWrapper) DeleteMember(roomID, userID int) error {
+	stmt, err := d.db.Prepare("delete from members where roomID=$1 and userID=$2")
 	if err != nil {
 		log.Println(err)
 		return err
@@ -88,14 +88,14 @@ func DeleteMember(roomID, userID int) error {
 	return nil
 }
 
-func DeleteMemberWithUnqueRoomID(uniqueRoomID string, userID int) error {
-	id, err := GetRoomIDByUniqueRoomID(uniqueRoomID)
+func (d *DatabaseWrapper) DeleteMemberWithUnqueRoomID(uniqueRoomID string, userID int) error {
+	id, err := d.GetRoomIDByUniqueRoomID(uniqueRoomID)
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	err = DeleteMember(id, userID)
+	err = d.DeleteMember(id, userID)
 	if err != nil {
 		log.Println(err)
 		return err
