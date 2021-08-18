@@ -8,8 +8,6 @@ services:
             POSTGRES_PASSWORD: galanonimpassword
         volumes:
             - data:/var/lib/postgresql/data
-        ports: 
-            - "5432:5432"
         networks: 
             - default
     redis:
