@@ -11,9 +11,7 @@ services:
         networks: 
             - default
     redis:
-        image: redis:alpine
-        ports:
-            - "6379:6379"   
+        image: redis:alpine  
         networks: 
             - default 
     server:
