@@ -189,6 +189,8 @@ func (h *Hub) listenPubSubChannel() {
 			h.handleUserJoined(message)
 		case UserLeftAction:
 			h.handleUserLeft(message)
+		case JoinPrivateRoomAction:
+			h.handleUserJoinPrivate(message)
 		}
 	}
 }
@@ -207,4 +209,28 @@ func (h *Hub) handleUserLeft(message Message) {
 	}
 
 	h.broadcastToClients(message.encode())
+}
+
+func (h *Hub) runRoomFromDatabase(id string) (*Room, error) {
+	var room *Room
+	dbRoom, err := database.GetRoom(id)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	if dbRoom != nil {
+		room = NewRoom(dbRoom.UniqueRoomID, dbRoom.Private)
+		go room.Run()
+		h.rooms[room] = true
+	}
+
+	return room, nil
+}
+
+func (h *Hub) handleUserJoinPrivate(m Message) {
+	targetClient := h.findClientByID(m.Sender.GetID())
+	if targetClient != nil {
+		targetClient.joinRoom(m.Target.GetID(), m.Sender)
+	}
 }

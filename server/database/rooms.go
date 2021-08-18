@@ -2,6 +2,7 @@ package database
 
 import (
 	"errors"
+	"linker-fan/gal-anonim-server/server/models"
 	"log"
 	"time"
 )
@@ -149,4 +150,11 @@ func GetRoomIDByName(name string) (int, error) {
 	}
 
 	return id, nil
+}
+
+func GetRoom(uniqueRoomID string) (*models.Room, error) {
+	var room models.Room
+	//err := db.QueryRow("select uniqueR")
+
+	return &room, nil
 }

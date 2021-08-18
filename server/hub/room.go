@@ -15,7 +15,7 @@ type Room struct {
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *Message
-	private    bool `json:"private"`
+	private    bool
 }
 
 func NewRoom(id string, private bool) *Room {
