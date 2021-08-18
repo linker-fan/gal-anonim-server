@@ -6,40 +6,40 @@ import (
 	"linker-fan/gal-anonim-server/server/database"
 	"linker-fan/gal-anonim-server/server/models"
 	"log"
-
-	"github.com/go-redis/redis/v8"
 )
 
 const PubSubGeneralChannel = "general"
 
 type Hub struct {
-	Clients     map[*Client]bool
-	Register    chan *Client
-	Unregister  chan *Client
-	broadcast   chan []byte
-	rooms       map[*Room]bool
-	users       []*models.User
-	redisClient *redis.Client
+	Clients    map[*Client]bool
+	Register   chan *Client
+	Unregister chan *Client
+	broadcast  chan []byte
+	rooms      map[*Room]bool
+	users      []*models.User
+	dw         *database.DatabaseWrapper
 }
 
-func NewHub() (*Hub, error) {
+func NewHub(dw *database.DatabaseWrapper) (*Hub, error) {
 
-	/*
-		users, err := database.GetAllUsers()
-		if err != nil {
-			log.Println(err)
-			return nil, err
-		}
-	*/
-
-	return &Hub{
+	hub := &Hub{
 		Clients:    make(map[*Client]bool),
 		Register:   make(chan *Client),
 		Unregister: make(chan *Client),
 		broadcast:  make(chan []byte),
 		rooms:      make(map[*Room]bool),
-		//users:      users,
-	}, nil
+		dw:         dw,
+	}
+
+	users, err := hub.dw.GetAllUsers()
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	hub.users = users
+
+	return hub, nil
 }
 
 func (h *Hub) Run() {
@@ -77,7 +77,7 @@ func (h *Hub) unregisterClient(client *Client) {
 }
 
 func (h *Hub) CreateRoom(id string, private bool) *Room {
-	room := NewRoom(id, private)
+	room := NewRoom(id, private, h.dw)
 	go room.Run()
 	h.rooms[room] = true
 	return room
@@ -150,7 +150,7 @@ func (h *Hub) publishClientleft(c *Client) error {
 		Sender: c,
 	}
 
-	err := database.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err()
+	err := h.dw.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err()
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -166,7 +166,7 @@ func (h *Hub) publishClientJoined(c *Client) error {
 		Sender: c,
 	}
 
-	if err := database.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err(); err != nil {
+	if err := h.dw.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err(); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -175,7 +175,7 @@ func (h *Hub) publishClientJoined(c *Client) error {
 }
 
 func (h *Hub) listenPubSubChannel() {
-	pubsub := database.RedisClient.Subscribe(context.Background(), PubSubGeneralChannel)
+	pubsub := h.dw.RedisClient.Subscribe(context.Background(), PubSubGeneralChannel)
 	channel := pubsub.Channel()
 
 	for msg := range channel {
@@ -215,14 +215,14 @@ func (h *Hub) handleUserLeft(message Message) {
 
 func (h *Hub) runRoomFromDatabase(id string) (*Room, error) {
 	var room *Room
-	dbRoom, err := database.GetRoom(id)
+	dbRoom, err := h.dw.GetRoom(id)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
 	if dbRoom != nil {
-		room = NewRoom(dbRoom.UniqueRoomID, dbRoom.Private)
+		room = NewRoom(dbRoom.UniqueRoomID, dbRoom.Private, h.dw)
 		go room.Run()
 		h.rooms[room] = true
 	}

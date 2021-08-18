@@ -16,9 +16,10 @@ type Room struct {
 	unregister chan *Client
 	broadcast  chan *Message
 	private    bool
+	dw         *database.DatabaseWrapper
 }
 
-func NewRoom(id string, private bool) *Room {
+func NewRoom(id string, private bool, dw *database.DatabaseWrapper) *Room {
 	r := &Room{
 		id:         id,
 		clients:    make(map[*Client]bool),
@@ -57,7 +58,7 @@ func (r *Room) registerClientInRoom(client *Client) error {
 		r.notifyClientJoined(client)
 	}
 	r.clients[client] = true
-	err := database.InsertMewmberWithUniqueRoomID(r.id, client.id)
+	err := r.dw.InsertMewmberWithUniqueRoomID(r.id, client.id)
 	if err != nil {
 		return err
 	}
@@ -68,7 +69,7 @@ func (r *Room) registerClientInRoom(client *Client) error {
 func (r *Room) unregisterClientInRoom(client *Client) error {
 	if _, ok := r.clients[client]; ok {
 		delete(r.clients, client)
-		err := database.DeleteMemberWithUnqueRoomID(r.id, client.id)
+		err := r.dw.DeleteMemberWithUnqueRoomID(r.id, client.id)
 		if err != nil {
 			return err
 		}
@@ -94,7 +95,7 @@ func (r *Room) notifyClientJoined(c *Client) {
 }
 
 func (r *Room) publishRoomMessage(message []byte) error {
-	err := database.RedisClient.Publish(context.Background(), r.GetID(), message).Err()
+	err := r.dw.RedisClient.Publish(context.Background(), r.GetID(), message).Err()
 	if err != nil {
 		log.Println(err)
 		return err
@@ -104,7 +105,7 @@ func (r *Room) publishRoomMessage(message []byte) error {
 }
 
 func (r *Room) subscribeToRoomMessages() {
-	pubsub := database.RedisClient.Subscribe(context.Background(), r.GetID())
+	pubsub := r.dw.RedisClient.Subscribe(context.Background(), r.GetID())
 	channel := pubsub.Channel()
 
 	for msg := range channel {

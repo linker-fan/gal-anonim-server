@@ -17,7 +17,7 @@ func NewAPIWrapper(c *config.Config) (*API, error) {
 		return nil, err
 	}
 
-	hub, err := hub.NewHub()
+	hub, err := hub.NewHub(dw)
 	if err != nil {
 		return nil, err
 	}
