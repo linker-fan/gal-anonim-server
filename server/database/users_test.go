@@ -68,5 +68,56 @@ func TestCheckIfUsernameExists(t *testing.T) {
 		err := dw.CheckIfUsernameExists(user.Username)
 		assert.Error(t, err, sql.ErrNoRows)
 	})
+}
 
+func TestGetIDAndPasswordByUsername(t *testing.T) {
+	db, mock, err := NewMock()
+	if err != nil {
+		t.Fail()
+	}
+
+	dw := DatabaseWrapper{db: db}
+	defer dw.db.Close()
+
+	query := regexp.QuoteMeta("select id, passwordHash, isAdmin from users where username=$1")
+
+	t.Run("Test GetIDAndPasswordByUsername No Err", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id", "passwordHash", "isAdmin"}).AddRow(user.ID, user.PasswordHash, user.IsAdmin)
+		mock.ExpectQuery(query).WithArgs(user.Username).WillReturnRows(rows)
+		id, passwordHash, isAdmin, err := dw.GetIDAndPasswordByUsername(user.Username)
+
+		assert.Equal(t, id, user.ID)
+		assert.Equal(t, passwordHash, user.PasswordHash)
+		assert.Equal(t, isAdmin, user.IsAdmin)
+		assert.NoError(t, err)
+
+	})
+}
+
+func TestGetUserIDByUsername(t *testing.T) {
+	db, mock, err := NewMock()
+	if err != nil {
+		t.Fail()
+	}
+
+	dw := DatabaseWrapper{db: db}
+	defer dw.db.Close()
+
+	query := regexp.QuoteMeta("select id from users where username=$1")
+
+	t.Run("Test GetUserIDByUsername", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id"}).AddRow(user.ID)
+		mock.ExpectQuery(query).WithArgs(user.Username).WillReturnRows(rows)
+		id, err := dw.GetUserIDByUsername(user.Username)
+		assert.Equal(t, id, user.ID)
+		assert.NoError(t, err)
+	})
+
+	t.Run("Test GetUserIDByUserame Err", func(t *testing.T) {
+		//rows := sqlmock.NewRows([]string{"id"}).AddRow(user.ID)
+		mock.ExpectQuery(query).WithArgs(user.Username).WillReturnError(sql.ErrNoRows)
+		id, err := dw.GetUserIDByUsername(user.Username)
+		assert.Equal(t, id, 0)
+		assert.Error(t, err, sql.ErrNoRows)
+	})
 }

@@ -42,6 +42,7 @@ func (d *DatabaseWrapper) CheckIfUsernameExists(username string) error {
 	return errors.New("Username already taken")
 }
 
+//GetIDAndPasswordByUsername queries id, passwordHash and isAdmin with username given as an argument
 func (d *DatabaseWrapper) GetIDAndPasswordByUsername(username string) (int, string, bool, error) {
 	var id int
 	var passwordHash string
@@ -59,7 +60,7 @@ func (d *DatabaseWrapper) GetUserIDByUsername(username string) (int, error) {
 	err := d.db.QueryRow("select id from users where username=$1", username).Scan(&id)
 	if err != nil {
 		log.Println(err)
-		return 0, nil
+		return 0, err
 	}
 
 	return id, nil
