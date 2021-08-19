@@ -34,6 +34,5 @@ func TestInsertMessage(t *testing.T) {
 		prep.ExpectExec().WithArgs(message.RoomID, message.UserID, message.Text, created).WillReturnResult(sqlmock.NewResult(0, 1))
 		err := dw.InsertMessage(message.RoomID, message.UserID, message.Text, created)
 		assert.NoError(t, err)
-
 	})
 }
