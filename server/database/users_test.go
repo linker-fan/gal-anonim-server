@@ -121,3 +121,22 @@ func TestGetUserIDByUsername(t *testing.T) {
 		assert.Error(t, err, sql.ErrNoRows)
 	})
 }
+
+func TestSetPin(t *testing.T) {
+	db, mock, err := NewMock()
+	if err != nil {
+		t.Fail()
+	}
+
+	dw := DatabaseWrapper{db: db}
+	defer dw.db.Close()
+
+	query := regexp.QuoteMeta("update users set pin=$1 where id=$2")
+
+	t.Run("Test SetPin", func(t *testing.T) {
+		prep := mock.ExpectPrepare(query)
+		prep.ExpectExec().WithArgs(user.Pin, user.ID).WillReturnResult(sqlmock.NewResult(0, 1))
+		err := dw.SetPin(*user.Pin, user.ID)
+		assert.NoError(t, err)
+	})
+}
