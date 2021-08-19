@@ -18,6 +18,7 @@ Register endpoint registers a new user in the database.
     "password2": "SomeTestPassword1#"
 }
 ```
+Password must be minimum 6 characters long, contain at least one uppercase character, one numeric character and one special character.
 
 ### Response:
 ```
@@ -77,4 +78,45 @@ HTTP 200
     "username": hyperxpizza,
     "is_admin": false
 }
+```
+
+## Refresh Token
+
+### Endpoint
+```
+/protected/refresh_token
+METHOD: POST
+```
+Refresh Token handler sets a new http only cookie with a fresh jwt token for the user. Authentication required, cookie with the token must be set in order for the request to be successfull
+### Response
+```
+If unauthenticated: HTTP 401
+If server fails: HTTP 500
+If everything OK: HTTP 200
+```
+
+## Set Pin
+
+### Endpoint
+```
+/protected/pin
+Method: POST
+```
+Set Pin handler sets a pin(extra layer of authentication) string for the user in the database. Authentication required, cookie with the token must be set in order for the request to be successfull
+
+### Example Payload
+```
+{
+    "pin": "PIN2"
+}
+```
+Pin must be not shorter than 4 characters and not longer than 8 characters
+
+### Response
+```
+If unauthenticated: HTTP 401
+If server can't unmarshal payload: HTTP 400
+If pin is not valid: HTTP 406
+If server fails: HTTP 500
+If everything OK: HTTP 200
 ```
