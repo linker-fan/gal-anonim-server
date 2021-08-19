@@ -1,6 +1,7 @@
 package database
 
 import (
+	"database/sql"
 	"linker-fan/gal-anonim-server/server/models"
 	"regexp"
 	"testing"
@@ -42,4 +43,30 @@ func TestInsertUser(t *testing.T) {
 	t.Run("Test Insert User Err", func(t *testing.T) {
 
 	})
+}
+
+func TestCheckIfUsernameExists(t *testing.T) {
+	db, mock, err := NewMock()
+	if err != nil {
+		t.Fail()
+	}
+
+	dw := DatabaseWrapper{db: db}
+	defer dw.db.Close()
+
+	query := regexp.QuoteMeta("select username from users where username = $1")
+
+	t.Run("Test CheckIfUsernameExists Err", func(t *testing.T) {
+		rows := sqlmock.NewRows([]string{"id", "username"}).AddRow(user.ID, user.Username)
+		mock.ExpectQuery(query).WithArgs(user.Username).WillReturnRows(rows)
+		err := dw.CheckIfUsernameExists(user.Username)
+		assert.Error(t, err)
+	})
+
+	t.Run("Test CheckIfUsernameExists SqlNoRowsErr", func(t *testing.T) {
+		mock.ExpectQuery(query).WillReturnError(sql.ErrNoRows)
+		err := dw.CheckIfUsernameExists(user.Username)
+		assert.Error(t, err, sql.ErrNoRows)
+	})
+
 }
