@@ -43,6 +43,7 @@ func NewHub(dw *database.DatabaseWrapper) (*Hub, error) {
 }
 
 func (h *Hub) Run() {
+	log.Println("Starting hub...")
 	go h.listenPubSubChannel()
 
 	for {

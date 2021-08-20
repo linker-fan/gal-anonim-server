@@ -27,7 +27,7 @@ func NewAPIWrapper(c *config.Config) (*API, error) {
 		wsServer: hub,
 	}
 
-	api.wsServer.Run()
+	go api.wsServer.Run()
 
 	return &api, nil
 }

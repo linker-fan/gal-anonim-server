@@ -18,7 +18,6 @@ type DatabaseWrapper struct {
 }
 
 func NewDatabaseWrapper(c *config.Config) (*DatabaseWrapper, error) {
-	var dw *DatabaseWrapper
 	db, err := connectToPostgres(c)
 	if err != nil {
 		return nil, err
@@ -29,10 +28,12 @@ func NewDatabaseWrapper(c *config.Config) (*DatabaseWrapper, error) {
 		return nil, err
 	}
 
-	dw.db = db
-	dw.RedisClient = rdb
+	dw := DatabaseWrapper{
+		db:          db,
+		RedisClient: rdb,
+	}
 
-	return dw, nil
+	return &dw, nil
 }
 
 func connectToPostgres(c *config.Config) (*sql.DB, error) {

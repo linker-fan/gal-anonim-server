@@ -11,7 +11,6 @@ import (
 )
 
 func Run(port string, mode string, c *config.Config) {
-
 	router, err := setupRoutes(c)
 	if err != nil {
 		log.Fatal(err)
@@ -20,9 +19,7 @@ func Run(port string, mode string, c *config.Config) {
 }
 
 func setupRoutes(c *config.Config) (*gin.Engine, error) {
-	r := gin.New()
-	r.Use(gin.Logger())
-	r.Use(gin.Recovery())
+	r := gin.Default()
 
 	api, err := handlers.NewAPIWrapper(c)
 	if err != nil {

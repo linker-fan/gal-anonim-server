@@ -129,7 +129,9 @@ func (a *API) Login(c *gin.Context) {
 		HttpOnly: true,
 	})
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
+	})
 }
 
 //MeHandler returns data set in the context from jwt token
