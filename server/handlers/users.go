@@ -200,7 +200,9 @@ func (a *API) RefreshTokenHandler(c *gin.Context) {
 		HttpOnly: true,
 	})
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, gin.H{
+		"token": tokenString,
+	})
 }
 
 type SetPinRequest struct {
