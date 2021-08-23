@@ -32,6 +32,12 @@ type Config struct {
 		Password string `yaml:"password"`
 		DB       int    `yaml:"db"`
 	} `yaml:"redis"`
+	FileStorage struct {
+		Endpoint        string `yaml:"endpoint"`
+		AccessKeyID     string `yaml:"accessKeyID"`
+		SecretAccessKey string `yaml:"secretAccessKey"`
+		Secure          bool   `yaml:"secure"`
+	} `yaml:"filestorage"`
 }
 
 func NewConfig(path string) (*Config, error) {
