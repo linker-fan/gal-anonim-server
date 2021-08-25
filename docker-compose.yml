@@ -13,7 +13,22 @@ services:
     redis:
         image: redis:alpine  
         networks: 
-            - default 
+            - default
+    file-storage:
+        image: minio/minio:RELEASE.2020-07-02T00-15-09Z
+        volumes:
+            - storage_1:/data
+        ports:
+            - "9001:9000"
+        environment:
+            MINIO_ACCESS_KEY: minio
+            MINIO_SECRET_KEY: minio123
+        command: server /data
+        healthcheck:
+            test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+            interval: 30s
+            timeout: 20s
+            retries: 3 
     server:
         build:
             context: ./server
@@ -27,3 +42,4 @@ services:
             - default
 volumes:
     data:
+    storage_1:
