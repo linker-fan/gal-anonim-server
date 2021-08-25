@@ -9,10 +9,11 @@ import (
 )
 
 type FileStorage struct {
-	client *minio.Client
+	client        *minio.Client
+	MaxUploadSize int64
 }
 
-func NewFileStorage(endpoint, accessKeyID, secretAccessKey string, secure bool) (*FileStorage, error) {
+func NewFileStorage(endpoint, accessKeyID, secretAccessKey string, secure bool, maxUploadSize int64) (*FileStorage, error) {
 	c, err := minio.New(endpoint, accessKeyID, secretAccessKey, secure)
 	if err != nil {
 		log.Printf("NewFileStorage: minio.New failed: %v\n", err)

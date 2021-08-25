@@ -24,7 +24,7 @@ func NewAPIWrapper(c *config.Config) (*API, error) {
 		return nil, err
 	}
 
-	fs, err := filestorage.NewFileStorage(c.FileStorage.Endpoint, c.FileStorage.AccessKeyID, c.FileStorage.SecretAccessKey, true)
+	fs, err := filestorage.NewFileStorage(c.FileStorage.Endpoint, c.FileStorage.AccessKeyID, c.FileStorage.SecretAccessKey, c.FileStorage.Secure, c.FileStorage.MaxUploadSize)
 	if err != nil {
 		return nil, err
 	}

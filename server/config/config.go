@@ -37,6 +37,7 @@ type Config struct {
 		AccessKeyID     string `yaml:"accessKeyID"`
 		SecretAccessKey string `yaml:"secretAccessKey"`
 		Secure          bool   `yaml:"secure"`
+		MaxUploadSize   int64  `yaml:"maxUploadSize"`
 	} `yaml:"filestorage"`
 }
 
