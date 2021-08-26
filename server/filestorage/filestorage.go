@@ -68,3 +68,19 @@ func (fs *FileStorage) CreateBucketIfDoesNotExist(name string) error {
 
 	return nil
 }
+
+func (fs *FileStorage) GetFile(bucketName, filename string) ([]byte, error) {
+	obj, err := fs.client.GetObject(bucketName, filename, minio.GetObjectOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	byteData := []byte{}
+	_, err = obj.Read(byteData)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return byteData, nil
+}
