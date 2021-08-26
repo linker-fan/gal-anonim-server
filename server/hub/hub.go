@@ -94,7 +94,7 @@ func (h *Hub) FindRoomByID(id string) *Room {
 	return nil
 }
 
-func (h *Hub) findClientByID(id int) *Client {
+func (h *Hub) FindClientByID(id int) *Client {
 	for c := range h.Clients {
 		if c.GetID() == id {
 			return c
@@ -110,7 +110,7 @@ func (h *Hub) notifyClientJoined(c *Client) {
 		Sender: c,
 	}
 
-	h.broadcastToClients(message.encode())
+	h.broadcastToClients(message.Encode())
 }
 
 func (h *Hub) notifyClientLeft(c *Client) {
@@ -119,7 +119,7 @@ func (h *Hub) notifyClientLeft(c *Client) {
 		Sender: c,
 	}
 
-	h.broadcastToClients(message.encode())
+	h.broadcastToClients(message.Encode())
 }
 
 func (h *Hub) listOnlineClients(c *Client) {
@@ -135,7 +135,7 @@ func (h *Hub) listOnlineClients(c *Client) {
 			Sender: &sender,
 		}
 
-		c.send <- message.encode()
+		c.send <- message.Encode()
 	}
 }
 
@@ -151,7 +151,7 @@ func (h *Hub) publishClientleft(c *Client) error {
 		Sender: c,
 	}
 
-	err := h.dw.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err()
+	err := h.dw.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.Encode()).Err()
 	if err != nil {
 		log.Println(err)
 		return nil
@@ -167,7 +167,7 @@ func (h *Hub) publishClientJoined(c *Client) error {
 		Sender: c,
 	}
 
-	if err := h.dw.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.encode()).Err(); err != nil {
+	if err := h.dw.RedisClient.Publish(context.Background(), PubSubGeneralChannel, msg.Encode()).Err(); err != nil {
 		log.Println(err)
 		return err
 	}
@@ -200,7 +200,7 @@ func (h *Hub) listenPubSubChannel() {
 
 func (h *Hub) handleUserJoined(message Message) {
 	h.users = append(h.users, message.Sender.MapIntoUser())
-	h.broadcastToClients(message.encode())
+	h.broadcastToClients(message.Encode())
 }
 
 func (h *Hub) handleUserLeft(message Message) {
@@ -211,7 +211,7 @@ func (h *Hub) handleUserLeft(message Message) {
 		}
 	}
 
-	h.broadcastToClients(message.encode())
+	h.broadcastToClients(message.Encode())
 }
 
 func (h *Hub) runRoomFromDatabase(id string) (*Room, error) {
@@ -232,7 +232,7 @@ func (h *Hub) runRoomFromDatabase(id string) (*Room, error) {
 }
 
 func (h *Hub) handleUserJoinPrivate(m Message) {
-	targetClient := h.findClientByID(m.Sender.GetID())
+	targetClient := h.FindClientByID(m.Sender.GetID())
 	if targetClient != nil {
 		targetClient.joinRoom(m.Target.GetID(), m.Sender)
 	}

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"linker-fan/gal-anonim-server/server/hub"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,19 @@ func (a *API) FileUploadHandler(c *gin.Context) {
 	uniqueRoomID := c.Param("uniqueRoomID")
 	if uniqueRoomID == "" {
 		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	id, exists := c.Get("id")
+	if !exists {
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	//find client
+	client := a.wsServer.FindClientByID(id.(int))
+	if client == nil {
+		c.Status(http.StatusInternalServerError)
 		return
 	}
 
@@ -50,6 +64,15 @@ func (a *API) FileUploadHandler(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+
+	m := hub.Message{
+		Action:  hub.SendMessageAction,
+		Message: fmt.Sprintf("%s/%s", uniqueRoomID, header.Filename),
+		Target:  room,
+		Sender:  client,
+	}
+
+	room.Broadcast <- &m
 
 	c.JSON(http.StatusOK, gin.H{
 		"url": fmt.Sprintf("%s/%s", uniqueRoomID, header.Filename),

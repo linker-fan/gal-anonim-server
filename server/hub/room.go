@@ -14,7 +14,7 @@ type Room struct {
 	clients    map[*Client]bool
 	register   chan *Client
 	unregister chan *Client
-	broadcast  chan *Message
+	Broadcast  chan *Message
 	private    bool
 	dw         *database.DatabaseWrapper
 }
@@ -25,7 +25,7 @@ func NewRoom(id string, private bool, dw *database.DatabaseWrapper) *Room {
 		clients:    make(map[*Client]bool),
 		register:   make(chan *Client),
 		unregister: make(chan *Client),
-		broadcast:  make(chan *Message),
+		Broadcast:  make(chan *Message),
 		private:    private,
 	}
 
@@ -48,7 +48,7 @@ func (r *Room) Run() {
 				log.Println(err)
 			}
 		case message := <-r.Broadcast:
-			r.publishRoomMessage(message.encode())
+			r.publishRoomMessage(message.Encode())
 		}
 	}
 }
@@ -91,7 +91,7 @@ func (r *Room) notifyClientJoined(c *Client) {
 		Message: fmt.Sprintf(welcomeMessage, c.username),
 	}
 
-	r.publishRoomMessage(message.encode())
+	r.publishRoomMessage(message.Encode())
 }
 
 func (r *Room) publishRoomMessage(message []byte) error {

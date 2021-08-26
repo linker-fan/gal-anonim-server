@@ -112,11 +112,11 @@ func (c *Client) ReadPump() {
 			break
 		}
 
-		c.handleNewMessage(jsonMessage)
+		c.HandleNewMessage(jsonMessage)
 	}
 }
 
-func (c *Client) handleNewMessage(jsonMessage []byte) {
+func (c *Client) HandleNewMessage(jsonMessage []byte) {
 	var message Message
 	if err := json.Unmarshal(jsonMessage, &message); err != nil {
 		log.Printf("Error on unmarshal JSON message %v\n", err)
@@ -128,7 +128,7 @@ func (c *Client) handleNewMessage(jsonMessage []byte) {
 	case SendMessageAction:
 		roomID := message.Target
 		if room := c.hub.FindRoomByID(roomID.GetID()); room != nil {
-			room.broadcast <- &message
+			room.Broadcast <- &message
 		}
 	case JoinRoomAction:
 		c.handleJoinRoomMessage(message)
@@ -145,7 +145,7 @@ func (c *Client) handleJoinRoomMessage(m Message) {
 }
 
 func (c *Client) handleJoinRoomPrivateMessage(m Message) {
-	target := c.hub.findClientByID(m.Sender.GetID())
+	target := c.hub.FindClientByID(m.Sender.GetID())
 	if target == nil {
 		return
 	}
@@ -195,7 +195,7 @@ func (c *Client) notifyRoomJoined(r *Room, s *Client) {
 		Sender: s,
 	}
 
-	c.send <- m.encode()
+	c.send <- m.Encode()
 }
 
 func (c *Client) MapIntoUser() *models.User {
