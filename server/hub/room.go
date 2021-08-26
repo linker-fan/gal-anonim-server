@@ -47,7 +47,7 @@ func (r *Room) Run() {
 			if err := r.unregisterClientInRoom(client); err != nil {
 				log.Println(err)
 			}
-		case message := <-r.broadcast:
+		case message := <-r.Broadcast:
 			r.publishRoomMessage(message.encode())
 		}
 	}

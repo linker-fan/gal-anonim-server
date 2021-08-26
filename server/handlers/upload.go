@@ -16,6 +16,12 @@ func (a *API) FileUploadHandler(c *gin.Context) {
 		return
 	}
 
+	room := a.wsServer.FindRoomByID(uniqueRoomID)
+	if room == nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		c.Status(http.StatusBadRequest)
