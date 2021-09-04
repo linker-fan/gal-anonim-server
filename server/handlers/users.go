@@ -72,7 +72,7 @@ func (a *API) Register(c *gin.Context) {
 	}
 
 	//insert user into the database
-	err = a.dw.InsertUser(request.Username, passwordHash)
+	err = a.dw.InsertUser(request.Username, passwordHash, request.Email)
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
 		return

@@ -14,6 +14,8 @@ type User struct {
 	Created      time.Time `json:"created"`
 	Updated      time.Time `json:"updated"`
 	Pin          *string   `json:"pin"`
+	Phone        string    `json:"phone"`
+	Email        string    `json:"email"`
 }
 
 func (u *User) GetID() int {

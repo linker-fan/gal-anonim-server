@@ -19,6 +19,7 @@ var user = models.User{
 	Created:      time.Now(),
 	Updated:      time.Now(),
 	Pin:          nil,
+	Email:        "hyperxpizza@domain.com",
 }
 
 func TestInsertUser(t *testing.T) {
@@ -30,13 +31,13 @@ func TestInsertUser(t *testing.T) {
 	dw := DatabaseWrapper{db: db}
 	defer dw.db.Close()
 
-	query := "insert into users(id,username,passwordHash,isAdmin,created,updated) values (default, $1, $2, $3, $4, $5)"
+	query := "insert into users(id,username,passwordHash,isAdmin,created,updated,email) values (default, $1, $2, $3, $4, $5, $6)"
 
 	t.Run("Test Insert User", func(t *testing.T) {
 		prep := mock.ExpectPrepare(regexp.QuoteMeta(query))
 		prep.ExpectExec().WithArgs(user.Username, user.PasswordHash, user.IsAdmin, time.Now(), time.Now()).WillReturnResult(sqlmock.NewResult(0, 1))
 
-		err := dw.InsertUser(user.Username, user.PasswordHash)
+		err := dw.InsertUser(user.Username, user.PasswordHash, user.Email)
 		assert.NoError(t, err)
 	})
 

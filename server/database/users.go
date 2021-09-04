@@ -10,14 +10,14 @@ import (
 
 //InsertUser takes username and hashed password from the register handler and creates a new row in users table. by default new user is not an admin
 //@author hyperxpizza
-func (d *DatabaseWrapper) InsertUser(username, passwordHash string) error {
-	stmt, err := d.db.Prepare("insert into users(id,username,passwordHash,isAdmin,created,updated) values (default, $1, $2, $3, $4, $5)")
+func (d *DatabaseWrapper) InsertUser(username, passwordHash, email string) error {
+	stmt, err := d.db.Prepare("insert into users(id,username,passwordHash,isAdmin,created,updated, email) values (default, $1, $2, $3, $4, $5, $6)")
 	if err != nil {
 		log.Println(err)
 		return err
 	}
 
-	_, err = stmt.Exec(username, passwordHash, false, time.Now(), time.Now())
+	_, err = stmt.Exec(username, passwordHash, false, time.Now(), time.Now(), email)
 	if err != nil {
 		log.Println(err)
 		return err
