@@ -79,3 +79,7 @@ func (a *API) FileUploadHandler(c *gin.Context) {
 	})
 	return
 }
+
+func (a *API) DownloadFileHandler(c *gin.Context) {
+
+}

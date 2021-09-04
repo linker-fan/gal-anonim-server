@@ -5,7 +5,9 @@ create table users (
     isAdmin boolean not null, 
 	created timestamp not null,
 	updated timestamp not null,
-	pin varchar(8)
+	pin varchar(8),
+	phone varchar(20),
+	email varchar(100) not null
 );
 
 create table rooms (

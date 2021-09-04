@@ -57,7 +57,13 @@ func setupRoutes(c *config.Config) (*gin.Engine, error) {
 	chat.Use(middleware.ChatMiddleware())
 	{
 		chat.GET("/ws", api.ChatWebsocket)
-		chat.POST("/:uniqueRoomID/upload", api.FileUploadHandler)
+
+	}
+
+	file := r.Group("files")
+	{
+		file.POST("/:uniqueRoomID/upload", api.FileUploadHandler)
+		file.GET("/:uniqueRoomID/download/:filename", api.DownloadFileHandler)
 	}
 
 	return r, nil
