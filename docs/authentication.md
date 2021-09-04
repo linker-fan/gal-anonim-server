@@ -14,6 +14,7 @@ Register endpoint registers a new user in the database.
 ```
 {
     "username": "hyperxpizza",
+    "email": "hyperxpizza@domain.com",
     "password1": "SomeTestPassword1#",
     "password2": "SomeTestPassword1#"
 }
