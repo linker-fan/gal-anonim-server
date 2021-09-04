@@ -3,6 +3,8 @@ package utils
 import (
 	"log"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestValidateUsername(t *testing.T) {
@@ -93,4 +95,16 @@ func TestValidateRoomName(t *testing.T) {
 	if err == nil {
 		t.Fail()
 	}
+}
+
+func TestValidateEmail(t *testing.T) {
+	t.Run("Test validate email", func(t *testing.T) {
+		valid := ValidateEmail("hyperxpizza@domain.com")
+		assert.NoError(t, valid)
+	})
+
+	t.Run("Test validate email special character", func(t *testing.T) {
+		valid := ValidateEmail("hyper!pizza@domain.com")
+		assert.Error(t, valid)
+	})
 }

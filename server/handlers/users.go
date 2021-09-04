@@ -11,6 +11,7 @@ import (
 
 type RegisterRequest struct {
 	Username  string `json:"username"`
+	Email     string `json:"email"`
 	Password1 string `json:"password1"`
 	Password2 string `json:"password2"`
 }
@@ -27,6 +28,12 @@ func (a *API) Register(c *gin.Context) {
 
 	//validate input data
 	err := utils.ValidateUsername(request.Username)
+	if err != nil {
+		c.Status(http.StatusNotAcceptable)
+		return
+	}
+
+	err = utils.ValidateEmail(request.Email)
 	if err != nil {
 		c.Status(http.StatusNotAcceptable)
 		return

@@ -122,3 +122,17 @@ func (d *DatabaseWrapper) DeleteUser(id int) error {
 
 	return nil
 }
+
+func (d *DatabaseWrapper) CheckIfEmailExists(email string) error {
+	var e string
+	err := d.db.QueryRow("select username from users where username=$1", email).Scan(&e)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil
+		} else {
+			return err
+		}
+	}
+
+	return errors.New("Email already taken")
+}

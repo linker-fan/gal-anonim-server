@@ -75,3 +75,13 @@ func ValidatePath(path string) error {
 	}
 	return nil
 }
+
+func ValidateEmail(e string) error {
+	emailRegex := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)
+	if !emailRegex.MatchString(e) {
+		return fmt.Errorf("Email not valid")
+	}
+
+	return nil
+
+}
